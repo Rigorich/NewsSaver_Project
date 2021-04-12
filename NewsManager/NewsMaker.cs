@@ -2,9 +2,10 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using GeneralClasses;
+using NewsManager.Instructions;
 using Pullenti.Ner;
 
-namespace Server
+namespace NewsManager
 {
     class NewsMaker
     {
@@ -16,7 +17,7 @@ namespace Server
             Instruction = instruction;
         }
 
-        public void ProcessPages(InternetPage[] pages)
+        public async Task ProcessPagesAsync(InternetPage[] pages)
         { 
             ParsePages(pages);
             AnalyzeTexts();

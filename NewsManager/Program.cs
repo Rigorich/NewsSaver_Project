@@ -1,18 +1,18 @@
-﻿using System;
+﻿using NewsManager.Instructions;
+using System;
 using System.IO;
 using System.Threading.Tasks;
 
-namespace Server
+namespace NewsManager
 {
     class Program
     {
         static async Task Main(string[] args)
         {
             Console.WriteLine("Hello World!");
-            Pullenti.Sdk.InitializeAll();
-            var manager = new ServerManager();
+            var manager = new Manager();
             Console.WriteLine("Let's get some news!");
-            var answer = await manager.GetNewsAsync();
+            var answer = await manager.GetNewsAsync(new SpecificInstruction_1());
             foreach (var news in answer)
             {
                 Console.WriteLine("---");

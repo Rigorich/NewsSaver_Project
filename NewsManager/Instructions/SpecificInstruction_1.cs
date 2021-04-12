@@ -2,9 +2,9 @@
 using GeneralClasses;
 using System.Text.RegularExpressions;
 
-namespace Server
+namespace NewsManager.Instructions
 {
-    public class SpecificInstruction_1 : DownloaderInstruction, IParseInstruction
+    public class SpecificInstruction_1 : SpecificInstruction
     {
         public override string MainPageUrl { get; protected set; } = "https://belaruspartisan.by/";
         public override int CrawlDepth { get; protected set; } = 1;
@@ -14,7 +14,7 @@ namespace Server
             return regexOfNewsPage.IsMatch(url);
         }
 
-        public NewsArticle Parse(InternetPage page)
+        public override NewsArticle Parse(InternetPage page)
         {
             string divArticle = @"<div itemscope itemtype=""http://schema.org/Article"" class=""pw article"">";
             string html = page.HTML;

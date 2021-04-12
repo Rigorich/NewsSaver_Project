@@ -1,9 +1,9 @@
 ﻿using System;
 using GeneralClasses;
 
-namespace Server
+namespace NewsManager.Instructions
 {
-    interface IParseInstruction
+    public interface IParseInstruction
     {
         public NewsArticle Parse(InternetPage page);
     }

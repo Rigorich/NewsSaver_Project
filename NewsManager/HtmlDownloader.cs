@@ -6,26 +6,28 @@ using Abot2.Crawler;
 using Abot2.Poco;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using NewsManager.Instructions;
 
-namespace Server
+namespace NewsManager
 {
     class HtmlDownloader
     {
         public DownloaderInstruction Instruction { get; protected set; }
         public InternetPage[] Pages { get; protected set; }
+
         protected List<InternetPage> tempPages { get; set; }
 
         public int PagesLimit { get; protected set; }
         public int MinCrawlDelayMilliSeconds { get; protected set; }
 
-        public HtmlDownloader(DownloaderInstruction instruction, int pagesLimit = 3, int crawlDelayMilliSeconds = 1000)
+        public HtmlDownloader(DownloaderInstruction instruction, int pagesLimit = 2, int crawlDelayMilliSeconds = 1000)
         {
             Instruction = instruction;
             PagesLimit = pagesLimit;
             MinCrawlDelayMilliSeconds = crawlDelayMilliSeconds;
         }
 
-        public async Task DownloadPages()
+        public async Task DownloadPagesAsync()
         {
             Pages = null;
             tempPages = new List<InternetPage>();
@@ -55,7 +57,7 @@ namespace Server
 
             Crawler_AllPagesCompleted();
         }
-        private void Crawler_OnePageCompleted(object sender, PageCrawlCompletedArgs e)
+        protected void Crawler_OnePageCompleted(object sender, PageCrawlCompletedArgs e)
         {
             var url = e.CrawledPage.Uri.AbsoluteUri;
             var hrml = e.CrawledPage.Content.Text;
@@ -64,7 +66,7 @@ namespace Server
                 tempPages.Add(new InternetPage(url, hrml));
             }
         }
-        private void Crawler_AllPagesCompleted()
+        protected void Crawler_AllPagesCompleted()
         {
             Pages = tempPages.ToArray();
             tempPages = null;

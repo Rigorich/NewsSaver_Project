@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Server
+namespace NewsManager.Instructions
 {
     public abstract class DownloaderInstruction
     {
