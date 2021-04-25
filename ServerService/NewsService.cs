@@ -8,14 +8,17 @@ namespace ServerService
         public object Get(NewsRequest request)
         {
             var manager = new NewsManager.Manager();
-            var news = manager.GetNewsAsync(new NewsManager.Instructions.SpecificInstruction_1()).GetAwaiter().GetResult();
-
-            foreach (var article in news)
+            var instruction = new NewsManager.Instructions.SpecificInstruction_1();
+            GeneralClasses.NewsArticle[] news;
+            try
             {
-                article.Entities = null;
+                news = manager.GetNewsAsync(instruction).GetAwaiter().GetResult();
             }
-
-            return news.ToJson();
+            catch
+            {
+                throw HttpError.ServiceUnavailable($"There is some error during parsing news from {instruction.MainPageUrl}");
+            }
+            return news;
         }
     }
 }

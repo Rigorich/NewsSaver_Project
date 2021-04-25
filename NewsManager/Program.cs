@@ -25,6 +25,7 @@ namespace NewsManager
                 {
                     Console.WriteLine(entity);
                 }
+                Console.WriteLine("XmlEntities: " + news.XmlEntities);
                 Console.WriteLine("---");
             }
         }

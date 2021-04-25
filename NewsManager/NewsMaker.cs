@@ -37,11 +37,11 @@ namespace NewsManager
             }
         }
 
-        protected Referent[] AnalyzeText(string text)
+        protected List<Referent> AnalyzeText(string text)
         {
             Processor processor = ProcessorService.CreateProcessor();
             AnalysisResult result = processor.Process(new SourceOfAnalysis(text));
-            return result.Entities.ToArray();
+            return result.Entities;
         }
         protected void AnalyzeTexts()
         {

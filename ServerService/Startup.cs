@@ -35,7 +35,7 @@ namespace ServerService
             {
                 endpoints.MapGet("/", async context =>
                 {
-                    await context.Response.WriteAsync("Hello, Human!");
+                    await context.Response.WriteAsync("Hello, Human! You can get some news here!");
                 });
             });
         }
