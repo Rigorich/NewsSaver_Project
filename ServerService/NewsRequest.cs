@@ -1,4 +1,6 @@
+using GeneralClasses;
 using ServiceStack;
+using System.Collections.Generic;
 
 namespace ServerService
 {
@@ -10,6 +12,6 @@ namespace ServerService
     }
     public class NewsResponse
     {
-        public string Result { get; set; }
+        public NewsArticle[] Result { get; set; }
     }
 }

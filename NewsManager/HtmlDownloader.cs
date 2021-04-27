@@ -20,11 +20,14 @@ namespace NewsManager
         public int PagesLimit { get; protected set; }
         public int MinCrawlDelayMilliSeconds { get; protected set; }
 
-        public HtmlDownloader(DownloaderInstruction instruction, int pagesLimit = 2, int crawlDelayMilliSeconds = 1000)
+        public HtmlDownloader(
+            DownloaderInstruction instruction,
+            int pagesLimit,
+            int crawlMinimumDelayMilliSeconds)
         {
             Instruction = instruction;
             PagesLimit = pagesLimit;
-            MinCrawlDelayMilliSeconds = crawlDelayMilliSeconds;
+            MinCrawlDelayMilliSeconds = crawlMinimumDelayMilliSeconds;
         }
 
         public async Task DownloadPagesAsync()

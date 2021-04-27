@@ -33,7 +33,14 @@ namespace NewsManager
             for (int i = 0; i < pages.Length; i++)
             {
                 InternetPage page = pages[i];
-                News[i] = ParsePage(page);
+                try
+                {
+                    News[i] = ParsePage(page);
+                }
+                catch
+                {
+                    News[i] = new NewsArticle(page.URL, page.HTML, "N/A", "N/A", DateTime.UnixEpoch);
+                }
             }
         }
 

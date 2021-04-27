@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="ServiceStack" Version="5.11.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DatabaseService\DatabaseService.csproj" />
+    <ProjectReference Include="..\ServerService\ServerService.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="GeneralClasses">
+      <HintPath>..\GeneralClasses\bin\Debug\netcoreapp3.1\GeneralClasses.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+</Project>

@@ -17,22 +17,14 @@ namespace NewsManager.Instructions
         public override NewsArticle Parse(InternetPage page)
         {
             string divArticle = @"<div itemscope itemtype=""http://schema.org/Article"" class=""pw article"">";
+            string divDate = @"<div class=""date_block"">";
             string html = page.HTML;
 
             int beginArticle = html.IndexOf(divArticle);
-            int endArticle = beginArticle + 1;
-            for (int depth = 1; depth != 0; endArticle++)
-            {
-                if (html.Substring(endArticle, 4) == "<div")
-                {
-                    depth++;
-                }
-                if (html.Substring(endArticle, 5) == "</div")
-                {
-                    depth--;
-                }
-            }
-            string article = page.HTML.Substring(beginArticle, endArticle - beginArticle - 1);
+            int beginDate = html.IndexOf(divDate);
+            int endDate = html.IndexOf("</div>", beginDate);
+
+            string article = page.HTML.Substring(beginArticle, endDate - beginArticle - 1);
 
             string name = GetArticleName(article);
             (string strDate, DateTime date) = GetArticleDate(article);
