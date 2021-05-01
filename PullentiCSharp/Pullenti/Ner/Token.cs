@@ -1,5 +1,5 @@
 ﻿/*
- * SDK Pullenti Lingvo, version 4.4, march 2021. Copyright (c) 2013, Pullenti. All rights reserved. 
+ * SDK Pullenti Lingvo, version 4.5, april 2021. Copyright (c) 2013, Pullenti. All rights reserved. 
  * Non-Commercial Freeware and Commercial Software.
  * This class is generated using the converter Unisharping (www.unisharping.ru) from Pullenti C# project. 
  * The latest version of the code is available on the site www.pullenti.ru
@@ -157,7 +157,7 @@ namespace Pullenti.Ner
                         if (char.IsWhiteSpace(((ch = Kit.Sofa.Text[j])))) 
                         {
                             this.SetAttr(1, true);
-                            if (ch == 0xD || ch == 0xA || ch == '\f') 
+                            if ((ch == 0xD || ch == 0xA || ch == '\f') || ch == 0x2028) 
                                 this.SetAttr(3, true);
                         }
                     }
@@ -172,7 +172,7 @@ namespace Pullenti.Ner
                         if (char.IsWhiteSpace((ch = Kit.Sofa.Text[j]))) 
                         {
                             this.SetAttr(2, true);
-                            if (ch == 0xD || ch == 0xA || ch == '\f') 
+                            if ((ch == 0xD || ch == 0xA || ch == '\f') || ch == 0x2028) 
                                 this.SetAttr(4, true);
                         }
                     }
@@ -296,7 +296,7 @@ namespace Pullenti.Ner
                 for (int p = BeginChar - 1; p >= 0; p--) 
                 {
                     char ch = txt[p];
-                    if (ch == 0xA) 
+                    if (ch == 0xA || ch == 0x2028) 
                         res++;
                     else if (ch == 0xD && ch0 != 0xA) 
                         res++;
@@ -322,7 +322,7 @@ namespace Pullenti.Ner
                 for (int p = EndChar + 1; p < txt.Length; p++) 
                 {
                     char ch = txt[p];
-                    if (ch == 0xD) 
+                    if (ch == 0xD || ch == 0x2028) 
                         res++;
                     else if (ch == 0xA && ch0 != 0xD) 
                         res++;
@@ -357,7 +357,7 @@ namespace Pullenti.Ner
             for (int i = p0; i <= p1; i++) 
             {
                 char ch = Kit.GetTextCharacter(i);
-                if (ch == '\r' || ch == '\n') 
+                if (ch == '\r' || ch == '\n' || ch == 0x2028) 
                 {
                     res += 10;
                     char ch1 = Kit.GetTextCharacter(i + 1);

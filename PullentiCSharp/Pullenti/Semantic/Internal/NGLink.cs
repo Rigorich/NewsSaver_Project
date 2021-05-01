@@ -1,5 +1,5 @@
 ﻿/*
- * SDK Pullenti Lingvo, version 4.4, march 2021. Copyright (c) 2013, Pullenti. All rights reserved. 
+ * SDK Pullenti Lingvo, version 4.5, april 2021. Copyright (c) 2013, Pullenti. All rights reserved. 
  * Non-Commercial Freeware and Commercial Software.
  * This class is generated using the converter Unisharping (www.unisharping.ru) from Pullenti C# project. 
  * The latest version of the code is available on the site www.pullenti.ru
@@ -147,59 +147,27 @@ namespace Pullenti.Semantic.Internal
                 if (To.Source.Source is Pullenti.Ner.Measure.Internal.NumbersWithUnitToken) 
                     return;
             }
+            List<Pullenti.Semantic.Core.SemanticLink> links = Pullenti.Semantic.Core.SemanticHelper.TryCreateLinks(To.Source.Source, From.Source.Source, null);
+            if (links != null) 
+            {
+                foreach (Pullenti.Semantic.Core.SemanticLink li in links) 
+                {
+                    if (li.Role != Pullenti.Semantic.Core.SemanticRole.Agent) 
+                    {
+                        Coef = li.Rank;
+                        if (Coef < 0.5) 
+                            Coef = 0.5;
+                        if (li.Role == Pullenti.Semantic.Core.SemanticRole.Strong || li.Idiom) 
+                            Coef *= 2;
+                        return;
+                    }
+                }
+            }
             bool nonGenText = false;
             if (string.IsNullOrEmpty(FromPrep) && !(From.Source.Source is Pullenti.Ner.Core.VerbPhraseToken)) 
             {
                 if (From.Order != (To.Order + 1)) 
                     nonGenText = true;
-            }
-            if (To.Source.DrGroups != null) 
-            {
-                foreach (Pullenti.Semantic.Utils.DerivateGroup gr in To.Source.DrGroups) 
-                {
-                    if (gr.Cm.Transitive && string.IsNullOrEmpty(FromPrep)) 
-                    {
-                        bool ok = false;
-                        if (To.Source.Source is Pullenti.Ner.Core.VerbPhraseToken) 
-                        {
-                            if (frmorph.Case.IsAccusative) 
-                            {
-                                ok = true;
-                                CanBePacient = true;
-                            }
-                        }
-                        else if (frmorph.Case.IsGenitive && From.Order == (To.Order + 1)) 
-                            ok = true;
-                        if (ok) 
-                        {
-                            Coef = Pullenti.Semantic.SemanticService.Params.TransitiveCoef;
-                            return;
-                        }
-                    }
-                    if (((gr.Cm.Questions & Pullenti.Semantic.Utils.QuestionType.WhatToDo)) != Pullenti.Semantic.Utils.QuestionType.Undefined && (From.Source.Source is Pullenti.Ner.Core.VerbPhraseToken)) 
-                    {
-                        Coef = Pullenti.Semantic.SemanticService.Params.TransitiveCoef;
-                        return;
-                    }
-                    if (gr.Cm.Nexts != null) 
-                    {
-                        if (gr.Cm.Nexts.ContainsKey(FromPrep)) 
-                        {
-                            Pullenti.Morph.MorphCase cas = gr.Cm.Nexts[FromPrep];
-                            if (!((cas & frmorph.Case)).IsUndefined) 
-                            {
-                                if (string.IsNullOrEmpty(FromPrep) && From.Order != (To.Order + 1) && ((cas & frmorph.Case)).IsGenitive) 
-                                {
-                                }
-                                else 
-                                {
-                                    Coef = Pullenti.Semantic.SemanticService.Params.NextModel;
-                                    return;
-                                }
-                            }
-                        }
-                    }
-                }
             }
             if (nonGenText || !string.IsNullOrEmpty(FromPrep)) 
                 return;
@@ -413,6 +381,20 @@ namespace Pullenti.Semantic.Internal
                 return Coef = -1;
             if (vf.Misc.Mood == Pullenti.Morph.MorphMood.Imperative) 
                 return Coef = -1;
+            List<Pullenti.Semantic.Core.SemanticLink> links = Pullenti.Semantic.Core.SemanticHelper.TryCreateLinks(ToVerb, From.Source.Source, null);
+            if (links != null) 
+            {
+                foreach (Pullenti.Semantic.Core.SemanticLink li in links) 
+                {
+                    if (li.Role == Pullenti.Semantic.Core.SemanticRole.Agent) 
+                    {
+                        Coef = li.Rank;
+                        if (Coef < 0.5) 
+                            Coef = 0.5;
+                        return Coef;
+                    }
+                }
+            }
             Pullenti.Ner.MorphCollection morph = FromMorph;
             if (vf2.Misc.Voice == Pullenti.Morph.MorphVoice.Passive || ToVerb.LastVerb.Morph.ContainsAttr("страд.з.", null)) 
             {
@@ -432,49 +414,7 @@ namespace Pullenti.Semantic.Internal
             if (vf.Misc.Attrs.Contains("инф.")) 
                 return Coef = -1;
             if (_isRevVerb(vf2)) 
-            {
-                Pullenti.Morph.MorphCase agCase = Pullenti.Morph.MorphCase.Undefined;
-                List<Pullenti.Semantic.Utils.DerivateGroup> grs = Pullenti.Semantic.Utils.DerivateService.FindDerivates(vf2.NormalFull ?? vf2.NormalCase, true, null);
-                if (grs != null) 
-                {
-                    foreach (Pullenti.Semantic.Utils.DerivateGroup gr in grs) 
-                    {
-                        if (gr.CmRev.Agent != null) 
-                        {
-                            agCase = gr.CmRev.Agent.Case;
-                            break;
-                        }
-                    }
-                }
-                if (!morph.Case.IsUndefined) 
-                {
-                    if (agCase.IsDative) 
-                    {
-                        if (morph.Case.IsDative) 
-                        {
-                            Coef = Pullenti.Semantic.SemanticService.Params.TransitiveCoef;
-                            if (morph.Case.IsGenitive) 
-                                Coef /= 2;
-                            return Coef;
-                        }
-                        return Coef = -1;
-                    }
-                    if (agCase.IsInstrumental) 
-                    {
-                        if (morph.Case.IsInstrumental) 
-                        {
-                            if (morph.Case.IsNominative) 
-                                return Coef = 0;
-                            return Coef = Pullenti.Semantic.SemanticService.Params.TransitiveCoef;
-                        }
-                        return Coef = -1;
-                    }
-                    if (!morph.Case.IsNominative) 
-                        return Coef = -1;
-                }
-                else 
-                    return Coef = 0;
-            }
+                return Coef = -1;
             if (vf.Number == Pullenti.Morph.MorphNumber.Plural) 
             {
                 if (!morph.Case.IsUndefined) 
@@ -585,6 +525,20 @@ namespace Pullenti.Semantic.Internal
             Pullenti.Morph.MorphWordForm vf2 = ToVerb.LastVerb.VerbMorph;
             if (vf2 == null) 
                 return -1;
+            List<Pullenti.Semantic.Core.SemanticLink> links = Pullenti.Semantic.Core.SemanticHelper.TryCreateLinks(ToVerb, From.Source.Source, null);
+            if (links != null) 
+            {
+                foreach (Pullenti.Semantic.Core.SemanticLink li in links) 
+                {
+                    if (li.Role == Pullenti.Semantic.Core.SemanticRole.Pacient) 
+                    {
+                        Coef = li.Rank;
+                        if (Coef < 0.5) 
+                            Coef = 0.5;
+                        return Coef;
+                    }
+                }
+            }
             Pullenti.Ner.MorphCollection morph = FromMorph;
             if (vf2.Misc.Voice == Pullenti.Morph.MorphVoice.Passive || ToVerb.LastVerb.Morph.ContainsAttr("страд.з.", null)) 
             {
@@ -631,86 +585,7 @@ namespace Pullenti.Semantic.Internal
                 }
                 return Coef;
             }
-            bool isTrans = false;
-            bool isRefDative = false;
-            List<Pullenti.Semantic.Utils.DerivateGroup> grs = Pullenti.Semantic.Utils.DerivateService.FindDerivates(vf2.NormalFull ?? vf2.NormalCase, true, null);
-            if (grs != null) 
-            {
-                foreach (Pullenti.Semantic.Utils.DerivateGroup gr in grs) 
-                {
-                    if (gr.Cm.Transitive) 
-                        isTrans = true;
-                    if (gr.CmRev.Agent != null && !gr.CmRev.Agent.Case.IsNominative) 
-                        isRefDative = true;
-                }
-            }
-            if (_isRevVerb(vf2)) 
-            {
-                if (!string.IsNullOrEmpty(FromPrep)) 
-                    return -1;
-                if (!morph.Case.IsUndefined) 
-                {
-                    if (isRefDative) 
-                    {
-                        if (morph.Case.IsNominative) 
-                            return Coef = Pullenti.Semantic.SemanticService.Params.TransitiveCoef;
-                    }
-                    else if (morph.Case.IsInstrumental) 
-                        return Coef = Pullenti.Semantic.SemanticService.Params.TransitiveCoef;
-                    return -1;
-                }
-                return Coef = 0;
-            }
-            if (vf2 != vf && !isTrans) 
-            {
-                grs = Pullenti.Semantic.Utils.DerivateService.FindDerivates(vf.NormalFull ?? vf.NormalCase, true, null);
-                if (grs != null) 
-                {
-                    foreach (Pullenti.Semantic.Utils.DerivateGroup gr in grs) 
-                    {
-                        if (gr.Cm.Transitive) 
-                            isTrans = true;
-                    }
-                }
-            }
-            if (isTrans) 
-            {
-                if (!string.IsNullOrEmpty(FromPrep)) 
-                    return -1;
-                if (!morph.Case.IsUndefined) 
-                {
-                    if (morph.Case.IsAccusative) 
-                    {
-                        Coef = Pullenti.Semantic.SemanticService.Params.TransitiveCoef;
-                        if (morph.Case.IsDative) 
-                            Coef /= 2;
-                        if (morph.Case.IsGenitive) 
-                            Coef /= 2;
-                        if (morph.Case.IsInstrumental) 
-                            Coef /= 2;
-                        return Coef;
-                    }
-                    else 
-                        return -1;
-                }
-            }
-            if (vf2.NormalCase == "БЫТЬ") 
-            {
-                if (!string.IsNullOrEmpty(FromPrep)) 
-                    return -1;
-                if (morph.Case.IsInstrumental) 
-                    return Coef = Pullenti.Semantic.SemanticService.Params.TransitiveCoef;
-                if (morph.Case.IsNominative) 
-                {
-                    if (From.Source.BeginToken.BeginChar > ToVerb.EndChar) 
-                        return Coef = Pullenti.Semantic.SemanticService.Params.TransitiveCoef;
-                    else 
-                        return Coef = Pullenti.Semantic.SemanticService.Params.TransitiveCoef / 2;
-                }
-                if (morph.Case.IsUndefined) 
-                    return Coef = Pullenti.Semantic.SemanticService.Params.TransitiveCoef / 2;
-            }
-            return -1;
+            return Coef = -1;
         }
         double _calcActant()
         {
@@ -721,28 +596,18 @@ namespace Pullenti.Semantic.Internal
                 return -1;
             if (FromPrep == null) 
                 return Coef = 0;
-            Pullenti.Ner.MorphCollection fm = From.Source.Source.Morph;
-            List<Pullenti.Semantic.Utils.DerivateGroup> grs = Pullenti.Semantic.Utils.DerivateService.FindDerivates(vf2.NormalFull ?? vf2.NormalCase, true, null);
-            if (grs != null) 
+            List<Pullenti.Semantic.Core.SemanticLink> links = Pullenti.Semantic.Core.SemanticHelper.TryCreateLinks(ToVerb, From.Source.Source, null);
+            if (links != null) 
             {
-                foreach (Pullenti.Semantic.Utils.DerivateGroup gr in grs) 
+                foreach (Pullenti.Semantic.Core.SemanticLink li in links) 
                 {
-                    if (gr.Cm.Nexts == null || !gr.Cm.Nexts.ContainsKey(FromPrep)) 
-                        continue;
-                    Pullenti.Morph.MorphCase cas = gr.Cm.Nexts[FromPrep];
-                    if (!((cas & fm.Case)).IsUndefined) 
+                    if (li.Role != Pullenti.Semantic.Core.SemanticRole.Agent && li.Role != Pullenti.Semantic.Core.SemanticRole.Pacient) 
                     {
-                        Coef = Pullenti.Semantic.SemanticService.Params.NextModel;
-                        if (string.IsNullOrEmpty(FromPrep)) 
-                        {
-                            if (fm.Case.IsNominative) 
-                                Coef /= 2;
-                            Coef /= 2;
-                        }
+                        Coef = li.Rank;
+                        if (Coef < 0.5) 
+                            Coef = 0.5;
                         return Coef;
                     }
-                    if (From.Source.Source.Morph.Case.IsUndefined) 
-                        return Coef = 0;
                 }
             }
             return Coef = 0.1;

@@ -1,5 +1,5 @@
 ﻿/*
- * SDK Pullenti Lingvo, version 4.4, march 2021. Copyright (c) 2013, Pullenti. All rights reserved. 
+ * SDK Pullenti Lingvo, version 4.5, april 2021. Copyright (c) 2013, Pullenti. All rights reserved. 
  * Non-Commercial Freeware and Commercial Software.
  * This class is generated using the converter Unisharping (www.unisharping.ru) from Pullenti C# project. 
  * The latest version of the code is available on the site www.pullenti.ru
@@ -3840,33 +3840,6 @@ namespace Pullenti.Ner.Instrument.Internal
                 return false;
             return true;
         }
-        public void _analizeContent(FragToken topDoc, bool isCitat, Pullenti.Ner.Instrument.InstrumentKind rootKind = Pullenti.Ner.Instrument.InstrumentKind.Undefined)
-        {
-            Kind = Pullenti.Ner.Instrument.InstrumentKind.Content;
-            if (BeginToken.Previous != null && BeginToken.Previous.IsChar((char)0x1E)) 
-                BeginToken = BeginToken.Previous;
-            ContentAnalyzeWhapper wr = new ContentAnalyzeWhapper();
-            wr.Analyze(this, topDoc, isCitat, rootKind);
-            foreach (FragToken ch in topDoc.Children) 
-            {
-                if (ch.Kind == Pullenti.Ner.Instrument.InstrumentKind.Head) 
-                {
-                    foreach (FragToken chh in ch.Children) 
-                    {
-                        if (chh.Kind == Pullenti.Ner.Instrument.InstrumentKind.Editions && chh.Referents != null) 
-                        {
-                            if (topDoc.Referents == null) 
-                                topDoc.Referents = new List<Pullenti.Ner.Referent>();
-                            foreach (Pullenti.Ner.Referent r in chh.Referents) 
-                            {
-                                if (!topDoc.Referents.Contains(r)) 
-                                    topDoc.Referents.Add(r);
-                            }
-                        }
-                    }
-                }
-            }
-        }
         static FragToken CreateZapiskaTitle(Pullenti.Ner.Token t0, Pullenti.Ner.Instrument.InstrumentReferent doc)
         {
             int cou = 0;
@@ -5744,6 +5717,33 @@ namespace Pullenti.Ner.Instrument.Internal
             }
             title.Tag = Pullenti.Ner.Decree.DecreeKind.Standard;
             return title;
+        }
+        public void _analizeContent(FragToken topDoc, bool isCitat, Pullenti.Ner.Instrument.InstrumentKind rootKind = Pullenti.Ner.Instrument.InstrumentKind.Undefined)
+        {
+            Kind = Pullenti.Ner.Instrument.InstrumentKind.Content;
+            if (BeginToken.Previous != null && BeginToken.Previous.IsChar((char)0x1E)) 
+                BeginToken = BeginToken.Previous;
+            ContentAnalyzeWhapper wr = new ContentAnalyzeWhapper();
+            wr.Analyze(this, topDoc, isCitat, rootKind);
+            foreach (FragToken ch in topDoc.Children) 
+            {
+                if (ch.Kind == Pullenti.Ner.Instrument.InstrumentKind.Head) 
+                {
+                    foreach (FragToken chh in ch.Children) 
+                    {
+                        if (chh.Kind == Pullenti.Ner.Instrument.InstrumentKind.Editions && chh.Referents != null) 
+                        {
+                            if (topDoc.Referents == null) 
+                                topDoc.Referents = new List<Pullenti.Ner.Referent>();
+                            foreach (Pullenti.Ner.Referent r in chh.Referents) 
+                            {
+                                if (!topDoc.Referents.Contains(r)) 
+                                    topDoc.Referents.Add(r);
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }

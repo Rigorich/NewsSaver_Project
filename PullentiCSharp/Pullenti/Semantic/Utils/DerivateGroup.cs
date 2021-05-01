@@ -1,5 +1,5 @@
 ﻿/*
- * SDK Pullenti Lingvo, version 4.4, march 2021. Copyright (c) 2013, Pullenti. All rights reserved. 
+ * SDK Pullenti Lingvo, version 4.5, april 2021. Copyright (c) 2013, Pullenti. All rights reserved. 
  * Non-Commercial Freeware and Commercial Software.
  * This class is generated using the converter Unisharping (www.unisharping.ru) from Pullenti C# project. 
  * The latest version of the code is available on the site www.pullenti.ru
@@ -32,8 +32,6 @@ namespace Pullenti.Semantic.Utils
         /// Модель управления (информация для вычисления семантических связей, что может идти за словами этой группы)
         /// </summary>
         public ControlModel Model = new ControlModel();
-        public Pullenti.Semantic.Internal.ControlModelOld Cm = new Pullenti.Semantic.Internal.ControlModelOld();
-        public Pullenti.Semantic.Internal.ControlModelOld CmRev = new Pullenti.Semantic.Internal.ControlModelOld();
         internal int LazyPos;
         public int Id;
         /// <summary>
@@ -88,8 +86,6 @@ namespace Pullenti.Semantic.Utils
                 NotGenerate = true;
             Prefix = str.DeserializeString(ref pos);
             Model.Deserialize(str, ref pos);
-            Cm.Deserialize(str, ref pos);
-            CmRev.Deserialize(str, ref pos);
             int cou = str.DeserializeShort(ref pos);
             for (; cou > 0; cou--) 
             {

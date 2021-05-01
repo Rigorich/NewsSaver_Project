@@ -343,14 +343,11 @@
       <Compile Include="Semantic\Internal\AlgoParams.cs" />
       <Compile Include="Semantic\Internal\AnaforHelper.cs" />
       <Compile Include="Semantic\Internal\AnalyzeHelper.cs" />
-      <Compile Include="Semantic\Internal\ControlModelOld.cs" />
       <Compile Include="Semantic\Internal\CreateHelper.cs" />
       <Compile Include="Semantic\Internal\DelimToken.cs" />
       <Compile Include="Semantic\Internal\DelimType.cs" />
       <Compile Include="Semantic\Internal\DerivateDictionary.cs" />
       <Compile Include="Semantic\Internal\ExplanTreeNode.cs" />
-      <Compile Include="Semantic\Internal\NextModelHelper.cs" />
-      <Compile Include="Semantic\Internal\NextModelItem.cs" />
       <Compile Include="Semantic\Internal\NGItem.cs" />
       <Compile Include="Semantic\Internal\NGLink.cs" />
       <Compile Include="Semantic\Internal\NGLinkType.cs" />

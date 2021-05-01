@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <ApplicationIcon></ApplicationIcon>
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Abot" Version="2.0.69" />
+    <PackageReference Include="ServiceStack" Version="5.10.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PullentiCSharp\Pullenti\Pullenti.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="GeneralClasses">
+      <HintPath>..\GeneralClasses\bin\Debug\netcoreapp3.1\GeneralClasses.dll</HintPath>
+    </Reference>
+    <Reference Include="NewsManager">
+      <HintPath>..\NewsManager\bin\Debug\netcoreapp3.1\NewsManager.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+</Project>

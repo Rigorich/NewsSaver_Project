@@ -1,5 +1,5 @@
 ﻿/*
- * SDK Pullenti Lingvo, version 4.4, march 2021. Copyright (c) 2013, Pullenti. All rights reserved. 
+ * SDK Pullenti Lingvo, version 4.5, april 2021. Copyright (c) 2013, Pullenti. All rights reserved. 
  * Non-Commercial Freeware and Commercial Software.
  * This class is generated using the converter Unisharping (www.unisharping.ru) from Pullenti C# project. 
  * The latest version of the code is available on the site www.pullenti.ru
@@ -24,8 +24,9 @@ namespace Pullenti.Ner.Core
         /// </summary>
         /// <param name="refs">список сериализуемых сущностей</param>
         /// <param name="rootTagName">имя корневого узла</param>
+        /// <param name="outOccurences">выводить ли вхождения в текст</param>
         /// <return>строка с XML</return>
-        public static string SerializeReferentsToXmlString(List<Pullenti.Ner.Referent> refs, string rootTagName = "referents")
+        public static string SerializeReferentsToXmlString(List<Pullenti.Ner.Referent> refs, string rootTagName = "referents", bool outOccurences = false)
         {
             int id = 1;
             foreach (Pullenti.Ner.Referent r in refs) 
@@ -39,10 +40,77 @@ namespace Pullenti.Ner.Core
                 xml.WriteStartElement(rootTagName);
                 foreach (Pullenti.Ner.Referent r in refs) 
                 {
-                    SerializeReferentToXml(r, xml);
+                    SerializeReferentToXml(r, xml, outOccurences, false);
                 }
                 xml.WriteEndElement();
             }
+            _corrXmlFile(res);
+            foreach (Pullenti.Ner.Referent r in refs) 
+            {
+                r.Tag = null;
+            }
+            return res.ToString();
+        }
+        /// <summary>
+        /// Прямая сериализация сущности в строку XML.
+        /// </summary>
+        /// <param name="r">сериализуемая сущность</param>
+        /// <param name="outOccurences">выводить ли вхождения в текст</param>
+        public static string SerializeReferentToXmlString(Pullenti.Ner.Referent r, bool outOccurences = false)
+        {
+            StringBuilder res = new StringBuilder();
+            using (XmlWriter xml = XmlWriter.Create(res)) 
+            {
+                SerializeReferentToXml(r, xml, outOccurences, true);
+            }
+            _corrXmlFile(res);
+            return res.ToString();
+        }
+        /// <summary>
+        /// Прямая сериализация сущности в XML.
+        /// </summary>
+        /// <param name="r">сериализуемая сущность</param>
+        /// <param name="xml">куда сериализовать</param>
+        /// <param name="outOccurences">выводить ли вхождения в текст</param>
+        /// <param name="convertSlotRefsToString">преобразовывать ли ссылки в слотах на сущноси в строковые значения</param>
+        public static void SerializeReferentToXml(Pullenti.Ner.Referent r, XmlWriter xml, bool outOccurences = false, bool convertSlotRefsToString = false)
+        {
+            xml.WriteStartElement("referent");
+            if (r.Tag is int) 
+                xml.WriteAttributeString("id", r.Tag.ToString());
+            xml.WriteAttributeString("typ", r.TypeName);
+            xml.WriteAttributeString("spel", _corrXmlValue(r.ToString()));
+            foreach (Pullenti.Ner.Slot s in r.Slots) 
+            {
+                if (s.Value != null) 
+                {
+                    string nam = s.TypeName;
+                    xml.WriteStartElement("slot");
+                    xml.WriteAttributeString("typ", s.TypeName);
+                    if (s.Value is Pullenti.Ner.Referent && (s.Value as Referent).Tag is int) 
+                        xml.WriteAttributeString("ref", (s.Value as Pullenti.Ner.Referent).Tag.ToString());
+                    if (s.Value != null) 
+                        xml.WriteAttributeString("val", _corrXmlValue(s.Value.ToString()));
+                    if (s.Count > 0) 
+                        xml.WriteAttributeString("count", s.Count.ToString());
+                    xml.WriteEndElement();
+                }
+            }
+            if (outOccurences) 
+            {
+                foreach (Pullenti.Ner.TextAnnotation o in r.Occurrence) 
+                {
+                    xml.WriteStartElement("occ");
+                    xml.WriteAttributeString("begin", o.BeginChar.ToString());
+                    xml.WriteAttributeString("end", o.EndChar.ToString());
+                    xml.WriteAttributeString("text", _corrXmlValue(o.GetText()));
+                    xml.WriteEndElement();
+                }
+            }
+            xml.WriteEndElement();
+        }
+        static void _corrXmlFile(StringBuilder res)
+        {
             int i = res.ToString().IndexOf('>');
             if (i > 10 && res[1] == '?') 
                 res.Remove(0, i + 1);
@@ -57,43 +125,8 @@ namespace Pullenti.Ner.Core
                 res.Remove(i, 1);
                 res.Insert(i, string.Format("&#x{0};", cod.ToString("X04")));
             }
-            foreach (Pullenti.Ner.Referent r in refs) 
-            {
-                r.Tag = null;
-            }
-            return res.ToString();
         }
-        /// <summary>
-        /// Прямая сериализация сущности в XML.
-        /// </summary>
-        /// <param name="r">сериализуемая сущность</param>
-        /// <param name="xml">куда сериализовать</param>
-        public static void SerializeReferentToXml(Pullenti.Ner.Referent r, XmlWriter xml)
-        {
-            xml.WriteStartElement("referent");
-            if (r.Tag is int) 
-                xml.WriteAttributeString("id", r.Tag.ToString());
-            xml.WriteAttributeString("typ", r.TypeName);
-            xml.WriteAttributeString("spel", _corrXmlText(r.ToString()));
-            foreach (Pullenti.Ner.Slot s in r.Slots) 
-            {
-                if (s.Value != null) 
-                {
-                    string nam = s.TypeName;
-                    xml.WriteStartElement("slot");
-                    xml.WriteAttributeString("typ", s.TypeName);
-                    if (s.Value is Pullenti.Ner.Referent) 
-                        xml.WriteAttributeString("ref", (s.Value as Pullenti.Ner.Referent).Tag.ToString());
-                    if (s.Value != null) 
-                        xml.WriteAttributeString("val", _corrXmlText(s.Value.ToString()));
-                    if (s.Count > 0) 
-                        xml.WriteAttributeString("count", s.Count.ToString());
-                    xml.WriteEndElement();
-                }
-            }
-            xml.WriteEndElement();
-        }
-        static string _corrXmlText(string txt)
+        static string _corrXmlValue(string txt)
         {
             if (txt == null) 
                 return "";
@@ -116,7 +149,7 @@ namespace Pullenti.Ner.Core
         /// <summary>
         /// Десериализация списка взаимосвязанных сущностей из строки
         /// </summary>
-        /// <param name="data">результат сериализации функцией SerializeReferentsToXmlString()</param>
+        /// <param name="xmlString">результат сериализации функцией SerializeReferentsToXmlString()</param>
         /// <return>Список экземпляров сущностей</return>
         public static List<Pullenti.Ner.Referent> DeserializeReferentsFromXmlString(string xmlString)
         {
@@ -163,6 +196,24 @@ namespace Pullenti.Ner.Core
                 }
             }
             return res;
+        }
+        /// <summary>
+        /// Десериализация сущности из строки XML
+        /// </summary>
+        /// <param name="xmlString">результат сериализации функцией SerializeReferentToXmlString()</param>
+        /// <return>Экземпляр сущностей</return>
+        public static Pullenti.Ner.Referent DeserializeReferentFromXmlString(string xmlString)
+        {
+            try 
+            {
+                XmlDocument xml = new XmlDocument();
+                xml.LoadXml(xmlString);
+                return _deserializeReferent(xml.DocumentElement);
+            }
+            catch(Exception ex) 
+            {
+            }
+            return null;
         }
         static Pullenti.Ner.Referent _deserializeReferent(XmlNode xml)
         {
@@ -221,8 +272,9 @@ namespace Pullenti.Ner.Core
         /// </summary>
         /// <param name="refs">список сериализуемых сущностей</param>
         /// <param name="rootTagName">имя корневого узла</param>
+        /// <param name="outOccurences">выводить ли вхождения в текст</param>
         /// <return>строка с JSON (массив [...])</return>
-        public static string SerializeReferentsToJsonString(List<Pullenti.Ner.Referent> refs)
+        public static string SerializeReferentsToJsonString(List<Pullenti.Ner.Referent> refs, bool outOccurences = false)
         {
             int id = 1;
             foreach (Pullenti.Ner.Referent r in refs) 
@@ -234,7 +286,7 @@ namespace Pullenti.Ner.Core
             res.Append("[");
             foreach (Pullenti.Ner.Referent r in refs) 
             {
-                string json = SerializeReferentToJsonString(r);
+                string json = SerializeReferentToJsonString(r, outOccurences);
                 res.Append("\r\n");
                 res.Append(json);
                 if (r != refs[refs.Count - 1]) 
@@ -251,8 +303,9 @@ namespace Pullenti.Ner.Core
         /// Сериализация сущности в JSON (словарь {...}).
         /// </summary>
         /// <param name="r">сериализуемая сущность</param>
+        /// <param name="outOccurences">выводить ли вхождения в текст</param>
         /// <return>строка со словарём JSON</return>
-        public static string SerializeReferentToJsonString(Pullenti.Ner.Referent r)
+        public static string SerializeReferentToJsonString(Pullenti.Ner.Referent r, bool outOccurences = false)
         {
             StringBuilder res = new StringBuilder();
             res.Append("{");
@@ -280,6 +333,20 @@ namespace Pullenti.Ner.Core
                     res.Append(",");
             }
             res.Append(" ]");
+            if (outOccurences) 
+            {
+                res.Append(",\r\n  \"occs\" : [");
+                for (int i = 0; i < r.Occurrence.Count; i++) 
+                {
+                    Pullenti.Ner.TextAnnotation o = r.Occurrence[i];
+                    res.AppendFormat("\r\n      {0} \"begin\" : {1}, \"end\" : {2}, \"text\" : \"", '{', o.BeginChar, o.EndChar);
+                    _corrJsonValue(o.GetText(), res);
+                    res.Append("\" }");
+                    if ((i + 1) < r.Occurrence.Count) 
+                        res.Append(",");
+                }
+                res.Append(" ]");
+            }
             res.Append("\r\n}");
             return res.ToString();
         }
