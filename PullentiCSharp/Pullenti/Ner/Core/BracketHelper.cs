@@ -1,5 +1,5 @@
 ﻿/*
- * SDK Pullenti Lingvo, version 4.4, march 2021. Copyright (c) 2013, Pullenti. All rights reserved. 
+ * SDK Pullenti Lingvo, version 4.5, april 2021. Copyright (c) 2013, Pullenti. All rights reserved. 
  * Non-Commercial Freeware and Commercial Software.
  * This class is generated using the converter Unisharping (www.unisharping.ru) from Pullenti C# project. 
  * The latest version of the code is available on the site www.pullenti.ru
@@ -541,8 +541,6 @@ namespace Pullenti.Ner.Core
                         return null;
                 }
             }
-            if (res == null && brList.Count > 1 && brList[1].CanBeClose) 
-                res = new BracketSequenceToken(brList[0].Source, brList[1].Source);
             if (res == null && brList.Count > 1 && CanBeCloseChar(brList[1].Char, brList[0].Char)) 
                 res = new BracketSequenceToken(brList[0].Source, brList[1].Source);
             if (res == null && brList.Count == 2 && brList[0].Char == brList[1].Char) 
@@ -592,7 +590,15 @@ namespace Pullenti.Ner.Core
             if (i < 0) 
                 return false;
             int j = m_CloseChars.IndexOf(close);
-            return i == j;
+            if (i == j) 
+                return true;
+            if (open == '"' && ((close == '“' || close == '”' || close == '»'))) 
+                return true;
+            if (open == '”' && ((close == '“' || close == '"'))) 
+                return true;
+            if (open == '“' && ((close == '"' || close == '”'))) 
+                return true;
+            return false;
         }
         static bool MustBeCloseChar(char close, char open)
         {

@@ -1,16 +1,19 @@
 ﻿using GeneralClasses;
 using NewsManager.Instructions;
+using NewsManager.Instructions.Available;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 
 namespace NewsManager
 {
     class Program
-    {
+    {   
+        /*
         class TestNM : NewsMaker
         {
-            public TestNM() : base(new SpecificInstruction_1()) { }
+            public TestNM() : base(new SpecificInstruction_()) { }
             public NewsArticle EntityThis(InternetPage page)
             {
                 var news = ParsePage(page);
@@ -18,13 +21,19 @@ namespace NewsManager
                 return news;
             }
         }
+        */
         static async Task Main(string[] args)
         {
             Console.WriteLine("Hello World!");
             var manager = new Manager();
-            var instruction = new SpecificInstruction_1();
             Console.WriteLine("Let's get some news!");
-            var answer = await manager.GetNewsAsync(instruction, 10);
+            var answer = new List<NewsArticle>(); 
+            foreach (var instr in AllInstructions.List)
+            {
+                Console.Write($"From {instr.MainPageUrl} ... ");
+                answer.AddRange(await manager.GetNewsAsync(instr).ConfigureAwait(false));
+                Console.WriteLine("Done.");
+            }
 
             //string url = "TEST";
             //string html;
@@ -38,6 +47,9 @@ namespace NewsManager
             //var page = new InternetPage(url, html);
             //var news = new TestNM().EntityThis(page);
 
+            Console.Write("Print it? ");
+            Console.ReadLine();
+            Console.WriteLine();
             foreach (var news in answer)
             {
                 Console.WriteLine("---");
@@ -45,13 +57,15 @@ namespace NewsManager
                 Console.WriteLine("Name: " + news.Name);
                 Console.WriteLine("Date: " + news.Date);
                 Console.WriteLine("Text: " + news.Text);
-                Console.WriteLine("Entities:");
+                Console.Write("Entities: ");
                 foreach (var entity in news.Entities)
                 {
-                    Console.WriteLine(entity);
+                    Console.Write(entity + ", ");
                 }
+                Console.WriteLine();
                 Console.WriteLine("XmlEntities: " + news.XmlEntities);
                 Console.WriteLine("---");
+                Console.WriteLine();
             }
         }
     }

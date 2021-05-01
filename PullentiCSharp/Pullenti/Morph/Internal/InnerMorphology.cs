@@ -1,5 +1,5 @@
 ﻿/*
- * SDK Pullenti Lingvo, version 4.4, march 2021. Copyright (c) 2013, Pullenti. All rights reserved. 
+ * SDK Pullenti Lingvo, version 4.5, april 2021. Copyright (c) 2013, Pullenti. All rights reserved. 
  * Non-Commercial Freeware and Commercial Software.
  * This class is generated using the converter Unisharping (www.unisharping.ru) from Pullenti C# project. 
  * The latest version of the code is available on the site www.pullenti.ru
@@ -162,14 +162,17 @@ namespace Pullenti.Morph.Internal
                     continue;
                 }
                 Pullenti.Morph.MorphLang lang = Pullenti.Morph.LanguageHelper.GetWordLang(term);
-                if (lang == Pullenti.Morph.MorphLang.UA) 
-                    pureUkrWords++;
-                else if (lang == Pullenti.Morph.MorphLang.RU) 
-                    pureRusWords++;
-                else if (lang == Pullenti.Morph.MorphLang.BY) 
-                    pureByWords++;
-                else if (lang == Pullenti.Morph.MorphLang.KZ) 
-                    pureKzWords++;
+                if (term.Length > 2) 
+                {
+                    if (lang == Pullenti.Morph.MorphLang.UA) 
+                        pureUkrWords++;
+                    else if (lang == Pullenti.Morph.MorphLang.RU) 
+                        pureRusWords++;
+                    else if (lang == Pullenti.Morph.MorphLang.BY) 
+                        pureByWords++;
+                    else if (lang == Pullenti.Morph.MorphLang.KZ) 
+                        pureKzWords++;
+                }
                 if (((lang & Pullenti.Morph.MorphLang.RU)) != Pullenti.Morph.MorphLang.Unknown) 
                     totRusWords++;
                 if (((lang & Pullenti.Morph.MorphLang.UA)) != Pullenti.Morph.MorphLang.Unknown) 
@@ -738,25 +741,25 @@ namespace Pullenti.Morph.Internal
             else 
                 return m_EngineEn.GetWordform(word, cla, gender, cas, num, addInfo);
         }
-        public string CorrectWordByMorph(string word, Pullenti.Morph.MorphLang lang)
+        public List<string> CorrectWordByMorph(string word, Pullenti.Morph.MorphLang lang, bool oneVar)
         {
             if (Pullenti.Morph.LanguageHelper.IsCyrillicChar(word[0])) 
             {
                 if (lang != null) 
                 {
                     if (m_EngineRu.Language.IsRu && lang.IsRu) 
-                        return m_EngineRu.CorrectWordByMorph(word);
+                        return m_EngineRu.CorrectWordByMorph(word, oneVar);
                     if (m_EngineUa.Language.IsUa && lang.IsUa) 
-                        return m_EngineUa.CorrectWordByMorph(word);
+                        return m_EngineUa.CorrectWordByMorph(word, oneVar);
                     if (m_EngineBy.Language.IsBy && lang.IsBy) 
-                        return m_EngineBy.CorrectWordByMorph(word);
+                        return m_EngineBy.CorrectWordByMorph(word, oneVar);
                     if (m_EngineKz.Language.IsKz && lang.IsKz) 
-                        return m_EngineKz.CorrectWordByMorph(word);
+                        return m_EngineKz.CorrectWordByMorph(word, oneVar);
                 }
-                return m_EngineRu.CorrectWordByMorph(word);
+                return m_EngineRu.CorrectWordByMorph(word, oneVar);
             }
             else 
-                return m_EngineEn.CorrectWordByMorph(word);
+                return m_EngineEn.CorrectWordByMorph(word, oneVar);
         }
         List<Pullenti.Morph.MorphWordForm> ProcessOneWord0(string wstr)
         {

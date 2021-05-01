@@ -1,5 +1,5 @@
 ﻿/*
- * SDK Pullenti Lingvo, version 4.4, march 2021. Copyright (c) 2013, Pullenti. All rights reserved. 
+ * SDK Pullenti Lingvo, version 4.5, april 2021. Copyright (c) 2013, Pullenti. All rights reserved. 
  * Non-Commercial Freeware and Commercial Software.
  * This class is generated using the converter Unisharping (www.unisharping.ru) from Pullenti C# project. 
  * The latest version of the code is available on the site www.pullenti.ru
@@ -392,6 +392,9 @@ namespace Pullenti.Ner.Core
                     VerbPhraseToken verb = VerbPhraseHelper.TryParse(it, true, false, false);
                     if (verb == null) 
                         continue;
+                    List<Pullenti.Semantic.Core.SemanticLink> vlinks2 = Pullenti.Semantic.Core.SemanticHelper.TryCreateLinks(verb, npt1, null);
+                    if (vlinks2.Count > 0) 
+                        continue;
                     List<Pullenti.Semantic.Core.SemanticLink> vlinks = Pullenti.Semantic.Core.SemanticHelper.TryCreateLinks(verb, inp, null);
                     List<Pullenti.Semantic.Core.SemanticLink> nlinks = Pullenti.Semantic.Core.SemanticHelper.TryCreateLinks(inp, npt1, null);
                     if (vlinks.Count == 0 && nlinks.Count > 0) 
@@ -465,6 +468,14 @@ namespace Pullenti.Ner.Core
                 if (items[i].CanBeNoun) 
                 {
                     if (items[i].ConjBefore) 
+                        continue;
+                    bool hasNoun = false;
+                    for (int j = i - 1; j >= 0; j--) 
+                    {
+                        if (items[j].CanBeNoun && !items[j].CanBeAdj) 
+                            hasNoun = true;
+                    }
+                    if (hasNoun) 
                         continue;
                     if (i > 0 && !items[i - 1].CanBeAdj) 
                         continue;
@@ -731,21 +742,31 @@ namespace Pullenti.Ner.Core
                 }
                 if ((zap + and) > 0) 
                 {
+                    bool err = false;
                     if (and > 1) 
-                        return null;
+                        err = true;
                     else if (and == 1 && !lastAnd) 
-                        return null;
-                    if ((zap + and) != cou) 
+                        err = true;
+                    else if ((zap + and) != cou) 
                     {
                         if (and == 1) 
                         {
                         }
                         else 
-                            return null;
+                            err = true;
+                    }
+                    else if (zap > 0 && and == 0) 
+                    {
                     }
                     Pullenti.Ner.Core.Internal.NounPhraseItem last = res.Adjectives[res.Adjectives.Count - 1] as Pullenti.Ner.Core.Internal.NounPhraseItem;
                     if (last.IsPronoun && !lastAnd) 
+                        err = true;
+                    if (err) 
+                    {
+                        if (((typ & NounPhraseParseAttr.CanNotHasCommaAnd)) == NounPhraseParseAttr.No) 
+                            return TryParseRu(first, typ | NounPhraseParseAttr.CanNotHasCommaAnd, maxCharPos, defNoun);
                         return null;
+                    }
                 }
             }
             if (stat != null) 

@@ -1,5 +1,5 @@
 ﻿/*
- * SDK Pullenti Lingvo, version 4.4, march 2021. Copyright (c) 2013, Pullenti. All rights reserved. 
+ * SDK Pullenti Lingvo, version 4.5, april 2021. Copyright (c) 2013, Pullenti. All rights reserved. 
  * Non-Commercial Freeware and Commercial Software.
  * This class is generated using the converter Unisharping (www.unisharping.ru) from Pullenti C# project. 
  * The latest version of the code is available on the site www.pullenti.ru
@@ -16,6 +16,304 @@ namespace Pullenti.Ner.Person.Internal
 {
     public class PersonAttrToken : Pullenti.Ner.ReferentToken
     {
+        public static void Initialize()
+        {
+            if (m_Termins != null) 
+                return;
+            PersonAttrTermin t;
+            m_Termins = new Pullenti.Ner.Core.TerminCollection();
+            m_Termins.Add(new PersonAttrTermin("ТОВАРИЩ") { Typ = PersonAttrTerminType.Prefix });
+            m_Termins.Add(new PersonAttrTermin("ТОВАРИШ", Pullenti.Morph.MorphLang.UA) { Typ = PersonAttrTerminType.Prefix });
+            foreach (string s in new string[] {"ГОСПОДИН", "ГРАЖДАНИН", "УРОЖЕНЕЦ", "МИСТЕР", "СЭР", "СЕНЬОР", "МОНСЕНЬОР", "СИНЬОР", "МЕСЬЕ", "МСЬЕ", "ДОН", "МАЭСТРО", "МЭТР"}) 
+            {
+                t = new PersonAttrTermin(s) { Typ = PersonAttrTerminType.Prefix, Gender = Pullenti.Morph.MorphGender.Masculine };
+                if (s == "ГРАЖДАНИН") 
+                {
+                    t.AddAbridge("ГР.");
+                    t.AddAbridge("ГРАЖД.");
+                    t.AddAbridge("ГР-Н");
+                }
+                m_Termins.Add(t);
+            }
+            foreach (string s in new string[] {"ПАН", "ГРОМАДЯНИН", "УРОДЖЕНЕЦЬ", "МІСТЕР", "СЕР", "СЕНЬЙОР", "МОНСЕНЬЙОР", "МЕСЬЄ", "МЕТР", "МАЕСТРО"}) 
+            {
+                t = new PersonAttrTermin(s, Pullenti.Morph.MorphLang.UA) { Typ = PersonAttrTerminType.Prefix, Gender = Pullenti.Morph.MorphGender.Masculine };
+                if (s == "ГРОМАДЯНИН") 
+                {
+                    t.AddAbridge("ГР.");
+                    t.AddAbridge("ГР-Н");
+                }
+                m_Termins.Add(t);
+            }
+            foreach (string s in new string[] {"ГОСПОЖА", "ПАНИ", "ГРАЖДАНКА", "УРОЖЕНКА", "СЕНЬОРА", "СЕНЬОРИТА", "СИНЬОРА", "СИНЬОРИТА", "МИСС", "МИССИС", "МАДАМ", "МАДЕМУАЗЕЛЬ", "ФРАУ", "ФРОЙЛЯЙН", "ЛЕДИ", "ДОННА"}) 
+            {
+                t = new PersonAttrTermin(s) { Typ = PersonAttrTerminType.Prefix, Gender = Pullenti.Morph.MorphGender.Feminie };
+                if (s == "ГРАЖДАНКА") 
+                {
+                    t.AddAbridge("ГР.");
+                    t.AddAbridge("ГРАЖД.");
+                    t.AddAbridge("ГР-КА");
+                }
+                m_Termins.Add(t);
+            }
+            foreach (string s in new string[] {"ПАНІ", "ГРОМАДЯНКА", "УРОДЖЕНКА", "СЕНЬЙОРА", "СЕНЬЙОРА", "МІС", "МІСІС", "МАДАМ", "МАДЕМУАЗЕЛЬ", "ФРАУ", "ФРОЙЛЯЙН", "ЛЕДІ"}) 
+            {
+                t = new PersonAttrTermin(s, Pullenti.Morph.MorphLang.UA) { Typ = PersonAttrTerminType.Prefix, Gender = Pullenti.Morph.MorphGender.Feminie };
+                if (s == "ГРОМАДЯНКА") 
+                {
+                    t.AddAbridge("ГР.");
+                    t.AddAbridge("ГР-КА");
+                }
+                m_Termins.Add(t);
+            }
+            t = new PersonAttrTermin("MISTER", Pullenti.Morph.MorphLang.EN) { Typ = PersonAttrTerminType.Prefix, Gender = Pullenti.Morph.MorphGender.Masculine };
+            t.AddAbridge("MR");
+            t.AddAbridge("MR.");
+            m_Termins.Add(t);
+            t = new PersonAttrTermin("MISSIS", Pullenti.Morph.MorphLang.EN) { Typ = PersonAttrTerminType.Prefix, Gender = Pullenti.Morph.MorphGender.Feminie };
+            t.AddAbridge("MRS");
+            t.AddAbridge("MSR.");
+            m_Termins.Add(t);
+            t = new PersonAttrTermin("MISS", Pullenti.Morph.MorphLang.EN) { Typ = PersonAttrTerminType.Prefix, Gender = Pullenti.Morph.MorphGender.Feminie };
+            t.AddAbridge("MS");
+            t.AddAbridge("MS.");
+            m_Termins.Add(t);
+            t = new PersonAttrTermin("БЕЗРАБОТНЫЙ") { Typ = PersonAttrTerminType.Position };
+            t.AddVariant("НЕ РАБОТАЮЩИЙ", false);
+            t.AddVariant("НЕ РАБОТАЕТ", false);
+            t.AddVariant("ВРЕМЕННО НЕ РАБОТАЮЩИЙ", false);
+            t.AddVariant("ВРЕМЕННО НЕ РАБОТАЕТ", false);
+            m_Termins.Add(t);
+            t = new PersonAttrTermin("БЕЗРОБІТНИЙ", Pullenti.Morph.MorphLang.UA) { Typ = PersonAttrTerminType.Position };
+            t.AddVariant("НЕ ПРАЦЮЮЧИЙ", false);
+            t.AddVariant("НЕ ПРАЦЮЄ", false);
+            t.AddVariant("ТИМЧАСОВО НЕ ПРАЦЮЮЧИЙ", false);
+            t.AddVariant("ТИМЧАСОВО НЕ ПРАЦЮЄ", false);
+            m_Termins.Add(t);
+            t = new PersonAttrTermin("ЗАМЕСТИТЕЛЬ") { CanonicText = "заместитель", Typ2 = PersonAttrTerminType2.Io2, Typ = PersonAttrTerminType.Position };
+            t.AddVariant("ЗАМЕСТИТЕЛЬНИЦА", false);
+            t.AddAbridge("ЗАМ.");
+            m_Termins.Add(t);
+            t = new PersonAttrTermin("ЗАСТУПНИК", Pullenti.Morph.MorphLang.UA) { CanonicText = "заступник", Typ2 = PersonAttrTerminType2.Io2, Typ = PersonAttrTerminType.Position };
+            t.AddVariant("ЗАСТУПНИЦЯ", false);
+            t.AddAbridge("ЗАМ.");
+            m_Termins.Add(t);
+            t = new PersonAttrTermin("УПОЛНОМОЧЕННЫЙ") { CanonicText = "уполномоченный", Typ2 = PersonAttrTerminType2.Io2, Typ = PersonAttrTerminType.Position };
+            m_Termins.Add(t);
+            t = new PersonAttrTermin("УПОВНОВАЖЕНИЙ", Pullenti.Morph.MorphLang.UA) { CanonicText = "уповноважений", Typ2 = PersonAttrTerminType2.Io2, Typ = PersonAttrTerminType.Position };
+            m_Termins.Add(t);
+            t = new PersonAttrTermin("ЭКС-УПОЛНОМОЧЕННЫЙ") { CanonicText = "экс-уполномоченный", Typ2 = PersonAttrTerminType2.Io2, Typ = PersonAttrTerminType.Position };
+            m_Termins.Add(t);
+            t = new PersonAttrTermin("ЕКС-УПОВНОВАЖЕНИЙ", Pullenti.Morph.MorphLang.UA) { CanonicText = "екс-уповноважений", Typ2 = PersonAttrTerminType2.Io2, Typ = PersonAttrTerminType.Position };
+            m_Termins.Add(t);
+            t = new PersonAttrTermin("ИСПОЛНЯЮЩИЙ ОБЯЗАННОСТИ") { Typ2 = PersonAttrTerminType2.Io, Typ = PersonAttrTerminType.Position };
+            t.AddAbridge("И.О.");
+            t.CanonicText = (t.Acronym = "ИО");
+            m_Termins.Add(t);
+            t = new PersonAttrTermin("ВИКОНУЮЧИЙ ОБОВЯЗКИ", Pullenti.Morph.MorphLang.UA) { Typ2 = PersonAttrTerminType2.Io, Typ = PersonAttrTerminType.Position };
+            t.AddAbridge("В.О.");
+            t.CanonicText = (t.Acronym = "ВО");
+            m_Termins.Add(t);
+            t = new PersonAttrTermin("ВРЕМЕННО ИСПОЛНЯЮЩИЙ ОБЯЗАННОСТИ") { Typ2 = PersonAttrTerminType2.Io, Typ = PersonAttrTerminType.Position };
+            t.AddAbridge("ВР.И.О.");
+            t.CanonicText = (t.Acronym = "ВРИО");
+            m_TerminVrio = t;
+            m_Termins.Add(t);
+            t = new PersonAttrTermin("ЗАВЕДУЮЩИЙ") { Typ = PersonAttrTerminType.Position };
+            t.AddAbridge("ЗАВЕД.");
+            t.AddAbridge("ЗАВ.");
+            m_Termins.Add(t);
+            t = new PersonAttrTermin("ЗАВІДУВАЧ", Pullenti.Morph.MorphLang.UA) { Typ = PersonAttrTerminType.Position };
+            t.AddAbridge("ЗАВІД.");
+            t.AddAbridge("ЗАВ.");
+            m_Termins.Add(t);
+            t = new PersonAttrTermin("СОТРУДНИК") { Typ = PersonAttrTerminType.Position };
+            t.AddAbridge("СОТРУДН.");
+            t.AddAbridge("СОТР.");
+            m_Termins.Add(t);
+            t = new PersonAttrTermin("СПІВРОБІТНИК", Pullenti.Morph.MorphLang.UA) { Typ = PersonAttrTerminType.Position };
+            t.AddAbridge("СПІВРОБ.");
+            t.AddAbridge("СПІВ.");
+            m_Termins.Add(t);
+            t = new PersonAttrTermin("АКАДЕМИК") { Typ = PersonAttrTerminType.Position };
+            t.AddAbridge("АКАД.");
+            m_Termins.Add(t);
+            t = new PersonAttrTermin("АКАДЕМІК", Pullenti.Morph.MorphLang.UA) { Typ = PersonAttrTerminType.Position };
+            t.AddAbridge("АКАД.");
+            m_Termins.Add(t);
+            t = new PersonAttrTermin("ЧЛЕН-КОРРЕСПОНДЕНТ") { Typ = PersonAttrTerminType.Position };
+            t.AddAbridge("ЧЛ.-КОРР.");
+            m_Termins.Add(t);
+            t = new PersonAttrTermin("ЧЛЕН-КОРЕСПОНДЕНТ", Pullenti.Morph.MorphLang.UA) { Typ = PersonAttrTerminType.Position };
+            t.AddAbridge("ЧЛ.-КОР.");
+            t.AddAbridge("ЧЛ.-КОРР.");
+            m_Termins.Add(t);
+            t = new PersonAttrTermin("ДОЦЕНТ") { Typ = PersonAttrTerminType.Position };
+            t.AddAbridge("ДОЦ.");
+            m_Termins.Add(t);
+            t = new PersonAttrTermin("ПРОФЕССОР") { Typ = PersonAttrTerminType.Position };
+            t.AddAbridge("ПРОФ.");
+            m_Termins.Add(t);
+            t = new PersonAttrTermin("ПРОФЕСОР", Pullenti.Morph.MorphLang.UA) { Typ = PersonAttrTerminType.Position };
+            t.AddAbridge("ПРОФ.");
+            m_Termins.Add(t);
+            t = new PersonAttrTermin("PROFESSOR", Pullenti.Morph.MorphLang.EN) { Typ = PersonAttrTerminType.Position };
+            t.AddAbridge("PROF.");
+            m_Termins.Add(t);
+            t = new PersonAttrTermin("КАНДИДАТ") { Typ2 = PersonAttrTerminType2.Grade, Typ = PersonAttrTerminType.Position };
+            t.AddAbridge("КАНД.");
+            t.AddAbridge("КАН.");
+            t.AddAbridge("К-Т");
+            t.AddAbridge("К.");
+            m_Termins.Add(t);
+            t = new PersonAttrTermin("ДОКТОР") { Typ2 = PersonAttrTerminType2.Grade, Typ = PersonAttrTerminType.Position };
+            t.AddAbridge("ДОКТ.");
+            t.AddAbridge("ДОК.");
+            t.AddAbridge("Д-Р");
+            t.AddAbridge("Д.");
+            m_Termins.Add(t);
+            t = new PersonAttrTermin("DOCTOR", Pullenti.Morph.MorphLang.EN) { Typ = PersonAttrTerminType.Prefix };
+            t.AddAbridge("DR");
+            t.AddAbridge("DR.");
+            m_Termins.Add(t);
+            t = new PersonAttrTermin("ДОКТОРАНТ") { Typ = PersonAttrTerminType.Position };
+            m_Termins.Add(t);
+            t = new PersonAttrTermin("ДОКТОРАНТ", Pullenti.Morph.MorphLang.UA) { Typ = PersonAttrTerminType.Position };
+            m_Termins.Add(t);
+            foreach (string s in new string[] {"КФН", "КТН", "КХН"}) 
+            {
+                t = new PersonAttrTermin(s) { CanonicText = "кандидат наук", Typ = PersonAttrTerminType.Position, Typ2 = PersonAttrTerminType2.Abbr };
+                m_Termins.Add(t);
+            }
+            foreach (string s in new string[] {"ГЛАВНЫЙ", "МЛАДШИЙ", "СТАРШИЙ", "ВЕДУЩИЙ", "НАУЧНЫЙ"}) 
+            {
+                t = new PersonAttrTermin(s) { Typ2 = PersonAttrTerminType2.Adj, Typ = PersonAttrTerminType.Position };
+                t.AddAllAbridges(0, 0, 2);
+                m_Termins.Add(t);
+            }
+            foreach (string s in new string[] {"ГОЛОВНИЙ", "МОЛОДШИЙ", "СТАРШИЙ", "ПРОВІДНИЙ", "НАУКОВИЙ"}) 
+            {
+                t = new PersonAttrTermin(s) { Typ2 = PersonAttrTerminType2.Adj, Typ = PersonAttrTerminType.Position, Lang = Pullenti.Morph.MorphLang.UA };
+                t.AddAllAbridges(0, 0, 2);
+                m_Termins.Add(t);
+            }
+            foreach (string s in new string[] {"НЫНЕШНИЙ", "НОВЫЙ", "CURRENT", "NEW"}) 
+            {
+                t = new PersonAttrTermin(s) { Typ2 = PersonAttrTerminType2.IgnoredAdj, Typ = PersonAttrTerminType.Position };
+                m_Termins.Add(t);
+            }
+            foreach (string s in new string[] {"НИНІШНІЙ", "НОВИЙ"}) 
+            {
+                t = new PersonAttrTermin(s) { Typ2 = PersonAttrTerminType2.IgnoredAdj, Typ = PersonAttrTerminType.Position, Lang = Pullenti.Morph.MorphLang.UA };
+                m_Termins.Add(t);
+            }
+            foreach (string s in new string[] {"ТОГДАШНИЙ", "БЫВШИЙ", "ПРЕДЫДУЩИЙ", "FORMER", "PREVIOUS", "THEN"}) 
+            {
+                t = new PersonAttrTermin(s) { Typ2 = PersonAttrTerminType2.Io, Typ = PersonAttrTerminType.Position };
+                m_Termins.Add(t);
+            }
+            foreach (string s in new string[] {"ТОДІШНІЙ", "КОЛИШНІЙ"}) 
+            {
+                t = new PersonAttrTermin(s) { Typ2 = PersonAttrTerminType2.Io, Typ = PersonAttrTerminType.Position, Lang = Pullenti.Morph.MorphLang.UA };
+                m_Termins.Add(t);
+            }
+            byte[] dat = ResourceHelper.GetBytes("attr_ru.dat");
+            if (dat == null) 
+                throw new Exception("Not found resource file attr_ru.dat in Person analyzer");
+            LoadAttrs(m_Termins, dat, Pullenti.Morph.MorphLang.RU);
+            if ((((dat = ResourceHelper.GetBytes("attr_en.dat")))) == null) 
+                throw new Exception("Not found resource file attr_en.dat in Person analyzer");
+            LoadAttrs(m_Termins, dat, Pullenti.Morph.MorphLang.EN);
+            LoadAttrs(m_Termins, ResourceHelper.GetBytes("attr_ua.dat"), Pullenti.Morph.MorphLang.UA);
+        }
+        static Pullenti.Ner.Core.TerminCollection m_Termins;
+        static PersonAttrTermin m_TerminVrio;
+        static byte[] Deflate(byte[] zip)
+        {
+            using (MemoryStream unzip = new MemoryStream()) 
+            {
+                MemoryStream data = new MemoryStream(zip);
+                data.Position = 0;
+                Pullenti.Morph.Internal.MorphDeserializer.DeflateGzip(data, unzip);
+                data.Dispose();
+                return unzip.ToArray();
+            }
+        }
+        static void LoadAttrs(Pullenti.Ner.Core.TerminCollection termins, byte[] dat, Pullenti.Morph.MorphLang lang)
+        {
+            if (dat == null || dat.Length == 0) 
+                return;
+            using (MemoryStream tmp = new MemoryStream(Deflate(dat))) 
+            {
+                tmp.Position = 0;
+                XmlDocument xml = new XmlDocument();
+                xml.Load(tmp);
+                foreach (XmlNode x in xml.DocumentElement.ChildNodes) 
+                {
+                    XmlAttribute a = x.Attributes["v"];
+                    if (a == null) 
+                        continue;
+                    string val = a.Value;
+                    if (val == null) 
+                        continue;
+                    string attrs = (x.Attributes["a"] == null ? "" : (x.Attributes["a"].InnerText ?? ""));
+                    if (val == "ОТЕЦ") 
+                    {
+                    }
+                    PersonAttrTermin pat = new PersonAttrTermin(val) { Typ = PersonAttrTerminType.Position, Lang = lang };
+                    foreach (char ch in attrs) 
+                    {
+                        if (ch == 'p') 
+                            pat.CanHasPersonAfter = 1;
+                        else if (ch == 'P') 
+                            pat.CanHasPersonAfter = 2;
+                        else if (ch == 's') 
+                            pat.CanBeSameSurname = true;
+                        else if (ch == 'm') 
+                            pat.Gender = Pullenti.Morph.MorphGender.Masculine;
+                        else if (ch == 'f') 
+                            pat.Gender = Pullenti.Morph.MorphGender.Feminie;
+                        else if (ch == 'b') 
+                            pat.IsBoss = true;
+                        else if (ch == 'r') 
+                            pat.IsMilitaryRank = true;
+                        else if (ch == 'n') 
+                            pat.IsNation = true;
+                        else if (ch == 'c') 
+                            pat.Typ = PersonAttrTerminType.King;
+                        else if (ch == 'q') 
+                            pat.Typ = PersonAttrTerminType.King;
+                        else if (ch == 'k') 
+                            pat.IsKin = true;
+                        else if (ch == 'a') 
+                            pat.Typ2 = PersonAttrTerminType2.Io2;
+                        else if (ch == '1') 
+                            pat.CanBeIndependant = true;
+                        else if (ch == '?') 
+                            pat.IsDoubt = true;
+                    }
+                    if (x.Attributes["alt"] != null) 
+                    {
+                        pat.AddVariant((val = x.Attributes["alt"].InnerText), false);
+                        if (val.IndexOf('.') > 0) 
+                            pat.AddAbridge(val);
+                    }
+                    if (x.ChildNodes.Count > 0) 
+                    {
+                        foreach (XmlNode xx in x.ChildNodes) 
+                        {
+                            if (xx.Name == "alt") 
+                            {
+                                pat.AddVariant((val = xx.InnerText), false);
+                                if (val.IndexOf('.') > 0) 
+                                    pat.AddAbridge(val);
+                            }
+                        }
+                    }
+                    termins.Add(pat);
+                }
+            }
+        }
         public PersonAttrToken(Pullenti.Ner.Token begin, Pullenti.Ner.Token end) : base(null, begin, end, null)
         {
         }
@@ -2500,304 +2798,6 @@ namespace Pullenti.Ner.Person.Internal
             if (pat.Typ2 != PersonAttrTerminType2.Io2 && pat.Typ2 != PersonAttrTerminType2.Undefined) 
                 return null;
             return tok;
-        }
-        public static void Initialize()
-        {
-            if (m_Termins != null) 
-                return;
-            PersonAttrTermin t;
-            m_Termins = new Pullenti.Ner.Core.TerminCollection();
-            m_Termins.Add(new PersonAttrTermin("ТОВАРИЩ") { Typ = PersonAttrTerminType.Prefix });
-            m_Termins.Add(new PersonAttrTermin("ТОВАРИШ", Pullenti.Morph.MorphLang.UA) { Typ = PersonAttrTerminType.Prefix });
-            foreach (string s in new string[] {"ГОСПОДИН", "ГРАЖДАНИН", "УРОЖЕНЕЦ", "МИСТЕР", "СЭР", "СЕНЬОР", "МОНСЕНЬОР", "СИНЬОР", "МЕСЬЕ", "МСЬЕ", "ДОН", "МАЭСТРО", "МЭТР"}) 
-            {
-                t = new PersonAttrTermin(s) { Typ = PersonAttrTerminType.Prefix, Gender = Pullenti.Morph.MorphGender.Masculine };
-                if (s == "ГРАЖДАНИН") 
-                {
-                    t.AddAbridge("ГР.");
-                    t.AddAbridge("ГРАЖД.");
-                    t.AddAbridge("ГР-Н");
-                }
-                m_Termins.Add(t);
-            }
-            foreach (string s in new string[] {"ПАН", "ГРОМАДЯНИН", "УРОДЖЕНЕЦЬ", "МІСТЕР", "СЕР", "СЕНЬЙОР", "МОНСЕНЬЙОР", "МЕСЬЄ", "МЕТР", "МАЕСТРО"}) 
-            {
-                t = new PersonAttrTermin(s, Pullenti.Morph.MorphLang.UA) { Typ = PersonAttrTerminType.Prefix, Gender = Pullenti.Morph.MorphGender.Masculine };
-                if (s == "ГРОМАДЯНИН") 
-                {
-                    t.AddAbridge("ГР.");
-                    t.AddAbridge("ГР-Н");
-                }
-                m_Termins.Add(t);
-            }
-            foreach (string s in new string[] {"ГОСПОЖА", "ПАНИ", "ГРАЖДАНКА", "УРОЖЕНКА", "СЕНЬОРА", "СЕНЬОРИТА", "СИНЬОРА", "СИНЬОРИТА", "МИСС", "МИССИС", "МАДАМ", "МАДЕМУАЗЕЛЬ", "ФРАУ", "ФРОЙЛЯЙН", "ЛЕДИ", "ДОННА"}) 
-            {
-                t = new PersonAttrTermin(s) { Typ = PersonAttrTerminType.Prefix, Gender = Pullenti.Morph.MorphGender.Feminie };
-                if (s == "ГРАЖДАНКА") 
-                {
-                    t.AddAbridge("ГР.");
-                    t.AddAbridge("ГРАЖД.");
-                    t.AddAbridge("ГР-КА");
-                }
-                m_Termins.Add(t);
-            }
-            foreach (string s in new string[] {"ПАНІ", "ГРОМАДЯНКА", "УРОДЖЕНКА", "СЕНЬЙОРА", "СЕНЬЙОРА", "МІС", "МІСІС", "МАДАМ", "МАДЕМУАЗЕЛЬ", "ФРАУ", "ФРОЙЛЯЙН", "ЛЕДІ"}) 
-            {
-                t = new PersonAttrTermin(s, Pullenti.Morph.MorphLang.UA) { Typ = PersonAttrTerminType.Prefix, Gender = Pullenti.Morph.MorphGender.Feminie };
-                if (s == "ГРОМАДЯНКА") 
-                {
-                    t.AddAbridge("ГР.");
-                    t.AddAbridge("ГР-КА");
-                }
-                m_Termins.Add(t);
-            }
-            t = new PersonAttrTermin("MISTER", Pullenti.Morph.MorphLang.EN) { Typ = PersonAttrTerminType.Prefix, Gender = Pullenti.Morph.MorphGender.Masculine };
-            t.AddAbridge("MR");
-            t.AddAbridge("MR.");
-            m_Termins.Add(t);
-            t = new PersonAttrTermin("MISSIS", Pullenti.Morph.MorphLang.EN) { Typ = PersonAttrTerminType.Prefix, Gender = Pullenti.Morph.MorphGender.Feminie };
-            t.AddAbridge("MRS");
-            t.AddAbridge("MSR.");
-            m_Termins.Add(t);
-            t = new PersonAttrTermin("MISS", Pullenti.Morph.MorphLang.EN) { Typ = PersonAttrTerminType.Prefix, Gender = Pullenti.Morph.MorphGender.Feminie };
-            t.AddAbridge("MS");
-            t.AddAbridge("MS.");
-            m_Termins.Add(t);
-            t = new PersonAttrTermin("БЕЗРАБОТНЫЙ") { Typ = PersonAttrTerminType.Position };
-            t.AddVariant("НЕ РАБОТАЮЩИЙ", false);
-            t.AddVariant("НЕ РАБОТАЕТ", false);
-            t.AddVariant("ВРЕМЕННО НЕ РАБОТАЮЩИЙ", false);
-            t.AddVariant("ВРЕМЕННО НЕ РАБОТАЕТ", false);
-            m_Termins.Add(t);
-            t = new PersonAttrTermin("БЕЗРОБІТНИЙ", Pullenti.Morph.MorphLang.UA) { Typ = PersonAttrTerminType.Position };
-            t.AddVariant("НЕ ПРАЦЮЮЧИЙ", false);
-            t.AddVariant("НЕ ПРАЦЮЄ", false);
-            t.AddVariant("ТИМЧАСОВО НЕ ПРАЦЮЮЧИЙ", false);
-            t.AddVariant("ТИМЧАСОВО НЕ ПРАЦЮЄ", false);
-            m_Termins.Add(t);
-            t = new PersonAttrTermin("ЗАМЕСТИТЕЛЬ") { CanonicText = "заместитель", Typ2 = PersonAttrTerminType2.Io2, Typ = PersonAttrTerminType.Position };
-            t.AddVariant("ЗАМЕСТИТЕЛЬНИЦА", false);
-            t.AddAbridge("ЗАМ.");
-            m_Termins.Add(t);
-            t = new PersonAttrTermin("ЗАСТУПНИК", Pullenti.Morph.MorphLang.UA) { CanonicText = "заступник", Typ2 = PersonAttrTerminType2.Io2, Typ = PersonAttrTerminType.Position };
-            t.AddVariant("ЗАСТУПНИЦЯ", false);
-            t.AddAbridge("ЗАМ.");
-            m_Termins.Add(t);
-            t = new PersonAttrTermin("УПОЛНОМОЧЕННЫЙ") { CanonicText = "уполномоченный", Typ2 = PersonAttrTerminType2.Io2, Typ = PersonAttrTerminType.Position };
-            m_Termins.Add(t);
-            t = new PersonAttrTermin("УПОВНОВАЖЕНИЙ", Pullenti.Morph.MorphLang.UA) { CanonicText = "уповноважений", Typ2 = PersonAttrTerminType2.Io2, Typ = PersonAttrTerminType.Position };
-            m_Termins.Add(t);
-            t = new PersonAttrTermin("ЭКС-УПОЛНОМОЧЕННЫЙ") { CanonicText = "экс-уполномоченный", Typ2 = PersonAttrTerminType2.Io2, Typ = PersonAttrTerminType.Position };
-            m_Termins.Add(t);
-            t = new PersonAttrTermin("ЕКС-УПОВНОВАЖЕНИЙ", Pullenti.Morph.MorphLang.UA) { CanonicText = "екс-уповноважений", Typ2 = PersonAttrTerminType2.Io2, Typ = PersonAttrTerminType.Position };
-            m_Termins.Add(t);
-            t = new PersonAttrTermin("ИСПОЛНЯЮЩИЙ ОБЯЗАННОСТИ") { Typ2 = PersonAttrTerminType2.Io, Typ = PersonAttrTerminType.Position };
-            t.AddAbridge("И.О.");
-            t.CanonicText = (t.Acronym = "ИО");
-            m_Termins.Add(t);
-            t = new PersonAttrTermin("ВИКОНУЮЧИЙ ОБОВЯЗКИ", Pullenti.Morph.MorphLang.UA) { Typ2 = PersonAttrTerminType2.Io, Typ = PersonAttrTerminType.Position };
-            t.AddAbridge("В.О.");
-            t.CanonicText = (t.Acronym = "ВО");
-            m_Termins.Add(t);
-            t = new PersonAttrTermin("ВРЕМЕННО ИСПОЛНЯЮЩИЙ ОБЯЗАННОСТИ") { Typ2 = PersonAttrTerminType2.Io, Typ = PersonAttrTerminType.Position };
-            t.AddAbridge("ВР.И.О.");
-            t.CanonicText = (t.Acronym = "ВРИО");
-            m_TerminVrio = t;
-            m_Termins.Add(t);
-            t = new PersonAttrTermin("ЗАВЕДУЮЩИЙ") { Typ = PersonAttrTerminType.Position };
-            t.AddAbridge("ЗАВЕД.");
-            t.AddAbridge("ЗАВ.");
-            m_Termins.Add(t);
-            t = new PersonAttrTermin("ЗАВІДУВАЧ", Pullenti.Morph.MorphLang.UA) { Typ = PersonAttrTerminType.Position };
-            t.AddAbridge("ЗАВІД.");
-            t.AddAbridge("ЗАВ.");
-            m_Termins.Add(t);
-            t = new PersonAttrTermin("СОТРУДНИК") { Typ = PersonAttrTerminType.Position };
-            t.AddAbridge("СОТРУДН.");
-            t.AddAbridge("СОТР.");
-            m_Termins.Add(t);
-            t = new PersonAttrTermin("СПІВРОБІТНИК", Pullenti.Morph.MorphLang.UA) { Typ = PersonAttrTerminType.Position };
-            t.AddAbridge("СПІВРОБ.");
-            t.AddAbridge("СПІВ.");
-            m_Termins.Add(t);
-            t = new PersonAttrTermin("АКАДЕМИК") { Typ = PersonAttrTerminType.Position };
-            t.AddAbridge("АКАД.");
-            m_Termins.Add(t);
-            t = new PersonAttrTermin("АКАДЕМІК", Pullenti.Morph.MorphLang.UA) { Typ = PersonAttrTerminType.Position };
-            t.AddAbridge("АКАД.");
-            m_Termins.Add(t);
-            t = new PersonAttrTermin("ЧЛЕН-КОРРЕСПОНДЕНТ") { Typ = PersonAttrTerminType.Position };
-            t.AddAbridge("ЧЛ.-КОРР.");
-            m_Termins.Add(t);
-            t = new PersonAttrTermin("ЧЛЕН-КОРЕСПОНДЕНТ", Pullenti.Morph.MorphLang.UA) { Typ = PersonAttrTerminType.Position };
-            t.AddAbridge("ЧЛ.-КОР.");
-            t.AddAbridge("ЧЛ.-КОРР.");
-            m_Termins.Add(t);
-            t = new PersonAttrTermin("ДОЦЕНТ") { Typ = PersonAttrTerminType.Position };
-            t.AddAbridge("ДОЦ.");
-            m_Termins.Add(t);
-            t = new PersonAttrTermin("ПРОФЕССОР") { Typ = PersonAttrTerminType.Position };
-            t.AddAbridge("ПРОФ.");
-            m_Termins.Add(t);
-            t = new PersonAttrTermin("ПРОФЕСОР", Pullenti.Morph.MorphLang.UA) { Typ = PersonAttrTerminType.Position };
-            t.AddAbridge("ПРОФ.");
-            m_Termins.Add(t);
-            t = new PersonAttrTermin("PROFESSOR", Pullenti.Morph.MorphLang.EN) { Typ = PersonAttrTerminType.Position };
-            t.AddAbridge("PROF.");
-            m_Termins.Add(t);
-            t = new PersonAttrTermin("КАНДИДАТ") { Typ2 = PersonAttrTerminType2.Grade, Typ = PersonAttrTerminType.Position };
-            t.AddAbridge("КАНД.");
-            t.AddAbridge("КАН.");
-            t.AddAbridge("К-Т");
-            t.AddAbridge("К.");
-            m_Termins.Add(t);
-            t = new PersonAttrTermin("ДОКТОР") { Typ2 = PersonAttrTerminType2.Grade, Typ = PersonAttrTerminType.Position };
-            t.AddAbridge("ДОКТ.");
-            t.AddAbridge("ДОК.");
-            t.AddAbridge("Д-Р");
-            t.AddAbridge("Д.");
-            m_Termins.Add(t);
-            t = new PersonAttrTermin("DOCTOR", Pullenti.Morph.MorphLang.EN) { Typ = PersonAttrTerminType.Prefix };
-            t.AddAbridge("DR");
-            t.AddAbridge("DR.");
-            m_Termins.Add(t);
-            t = new PersonAttrTermin("ДОКТОРАНТ") { Typ = PersonAttrTerminType.Position };
-            m_Termins.Add(t);
-            t = new PersonAttrTermin("ДОКТОРАНТ", Pullenti.Morph.MorphLang.UA) { Typ = PersonAttrTerminType.Position };
-            m_Termins.Add(t);
-            foreach (string s in new string[] {"КФН", "КТН", "КХН"}) 
-            {
-                t = new PersonAttrTermin(s) { CanonicText = "кандидат наук", Typ = PersonAttrTerminType.Position, Typ2 = PersonAttrTerminType2.Abbr };
-                m_Termins.Add(t);
-            }
-            foreach (string s in new string[] {"ГЛАВНЫЙ", "МЛАДШИЙ", "СТАРШИЙ", "ВЕДУЩИЙ", "НАУЧНЫЙ"}) 
-            {
-                t = new PersonAttrTermin(s) { Typ2 = PersonAttrTerminType2.Adj, Typ = PersonAttrTerminType.Position };
-                t.AddAllAbridges(0, 0, 2);
-                m_Termins.Add(t);
-            }
-            foreach (string s in new string[] {"ГОЛОВНИЙ", "МОЛОДШИЙ", "СТАРШИЙ", "ПРОВІДНИЙ", "НАУКОВИЙ"}) 
-            {
-                t = new PersonAttrTermin(s) { Typ2 = PersonAttrTerminType2.Adj, Typ = PersonAttrTerminType.Position, Lang = Pullenti.Morph.MorphLang.UA };
-                t.AddAllAbridges(0, 0, 2);
-                m_Termins.Add(t);
-            }
-            foreach (string s in new string[] {"НЫНЕШНИЙ", "НОВЫЙ", "CURRENT", "NEW"}) 
-            {
-                t = new PersonAttrTermin(s) { Typ2 = PersonAttrTerminType2.IgnoredAdj, Typ = PersonAttrTerminType.Position };
-                m_Termins.Add(t);
-            }
-            foreach (string s in new string[] {"НИНІШНІЙ", "НОВИЙ"}) 
-            {
-                t = new PersonAttrTermin(s) { Typ2 = PersonAttrTerminType2.IgnoredAdj, Typ = PersonAttrTerminType.Position, Lang = Pullenti.Morph.MorphLang.UA };
-                m_Termins.Add(t);
-            }
-            foreach (string s in new string[] {"ТОГДАШНИЙ", "БЫВШИЙ", "ПРЕДЫДУЩИЙ", "FORMER", "PREVIOUS", "THEN"}) 
-            {
-                t = new PersonAttrTermin(s) { Typ2 = PersonAttrTerminType2.Io, Typ = PersonAttrTerminType.Position };
-                m_Termins.Add(t);
-            }
-            foreach (string s in new string[] {"ТОДІШНІЙ", "КОЛИШНІЙ"}) 
-            {
-                t = new PersonAttrTermin(s) { Typ2 = PersonAttrTerminType2.Io, Typ = PersonAttrTerminType.Position, Lang = Pullenti.Morph.MorphLang.UA };
-                m_Termins.Add(t);
-            }
-            byte[] dat = ResourceHelper.GetBytes("attr_ru.dat");
-            if (dat == null) 
-                throw new Exception("Not found resource file attr_ru.dat in Person analyzer");
-            LoadAttrs(m_Termins, dat, Pullenti.Morph.MorphLang.RU);
-            if ((((dat = ResourceHelper.GetBytes("attr_en.dat")))) == null) 
-                throw new Exception("Not found resource file attr_en.dat in Person analyzer");
-            LoadAttrs(m_Termins, dat, Pullenti.Morph.MorphLang.EN);
-            LoadAttrs(m_Termins, ResourceHelper.GetBytes("attr_ua.dat"), Pullenti.Morph.MorphLang.UA);
-        }
-        static Pullenti.Ner.Core.TerminCollection m_Termins;
-        static PersonAttrTermin m_TerminVrio;
-        static byte[] Deflate(byte[] zip)
-        {
-            using (MemoryStream unzip = new MemoryStream()) 
-            {
-                MemoryStream data = new MemoryStream(zip);
-                data.Position = 0;
-                Pullenti.Morph.Internal.MorphDeserializer.DeflateGzip(data, unzip);
-                data.Dispose();
-                return unzip.ToArray();
-            }
-        }
-        static void LoadAttrs(Pullenti.Ner.Core.TerminCollection termins, byte[] dat, Pullenti.Morph.MorphLang lang)
-        {
-            if (dat == null || dat.Length == 0) 
-                return;
-            using (MemoryStream tmp = new MemoryStream(Deflate(dat))) 
-            {
-                tmp.Position = 0;
-                XmlDocument xml = new XmlDocument();
-                xml.Load(tmp);
-                foreach (XmlNode x in xml.DocumentElement.ChildNodes) 
-                {
-                    XmlAttribute a = x.Attributes["v"];
-                    if (a == null) 
-                        continue;
-                    string val = a.Value;
-                    if (val == null) 
-                        continue;
-                    string attrs = (x.Attributes["a"] == null ? "" : (x.Attributes["a"].InnerText ?? ""));
-                    if (val == "ОТЕЦ") 
-                    {
-                    }
-                    PersonAttrTermin pat = new PersonAttrTermin(val) { Typ = PersonAttrTerminType.Position, Lang = lang };
-                    foreach (char ch in attrs) 
-                    {
-                        if (ch == 'p') 
-                            pat.CanHasPersonAfter = 1;
-                        else if (ch == 'P') 
-                            pat.CanHasPersonAfter = 2;
-                        else if (ch == 's') 
-                            pat.CanBeSameSurname = true;
-                        else if (ch == 'm') 
-                            pat.Gender = Pullenti.Morph.MorphGender.Masculine;
-                        else if (ch == 'f') 
-                            pat.Gender = Pullenti.Morph.MorphGender.Feminie;
-                        else if (ch == 'b') 
-                            pat.IsBoss = true;
-                        else if (ch == 'r') 
-                            pat.IsMilitaryRank = true;
-                        else if (ch == 'n') 
-                            pat.IsNation = true;
-                        else if (ch == 'c') 
-                            pat.Typ = PersonAttrTerminType.King;
-                        else if (ch == 'q') 
-                            pat.Typ = PersonAttrTerminType.King;
-                        else if (ch == 'k') 
-                            pat.IsKin = true;
-                        else if (ch == 'a') 
-                            pat.Typ2 = PersonAttrTerminType2.Io2;
-                        else if (ch == '1') 
-                            pat.CanBeIndependant = true;
-                        else if (ch == '?') 
-                            pat.IsDoubt = true;
-                    }
-                    if (x.Attributes["alt"] != null) 
-                    {
-                        pat.AddVariant((val = x.Attributes["alt"].InnerText), false);
-                        if (val.IndexOf('.') > 0) 
-                            pat.AddAbridge(val);
-                    }
-                    if (x.ChildNodes.Count > 0) 
-                    {
-                        foreach (XmlNode xx in x.ChildNodes) 
-                        {
-                            if (xx.Name == "alt") 
-                            {
-                                pat.AddVariant((val = xx.InnerText), false);
-                                if (val.IndexOf('.') > 0) 
-                                    pat.AddAbridge(val);
-                            }
-                        }
-                    }
-                    termins.Add(pat);
-                }
-            }
         }
     }
 }

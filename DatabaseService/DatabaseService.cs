@@ -14,7 +14,7 @@ namespace DatabaseService
 
             if (article is null)
             {
-                throw HttpError.BadRequest($"Sended article is null");
+                return HttpError.BadRequest($"Sended article is null");
             }
 
             foreach (var prop in typeof(NewsArticle).GetProperties())
@@ -24,7 +24,7 @@ namespace DatabaseService
                     (prop.PropertyType == typeof(string) &&
                     string.IsNullOrWhiteSpace(value as string)))
                 {
-                    throw HttpError.BadRequest($"Sended article is not full");
+                    return HttpError.BadRequest($"Sended article is not full! {prop.Name} is null or empty");
                 }
             }
 
@@ -35,7 +35,7 @@ namespace DatabaseService
             }
             catch
             {
-                throw HttpError.Conflict($"We can't save your article");
+                return HttpError.Conflict($"We can't save your article");
             }
 
             var response = new SaveResponse();

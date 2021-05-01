@@ -1,5 +1,5 @@
 ﻿/*
- * SDK Pullenti Lingvo, version 4.4, march 2021. Copyright (c) 2013, Pullenti. All rights reserved. 
+ * SDK Pullenti Lingvo, version 4.5, april 2021. Copyright (c) 2013, Pullenti. All rights reserved. 
  * Non-Commercial Freeware and Commercial Software.
  * This class is generated using the converter Unisharping (www.unisharping.ru) from Pullenti C# project. 
  * The latest version of the code is available on the site www.pullenti.ru
@@ -222,14 +222,30 @@ namespace Pullenti.Morph
             return bi;
         }
         /// <summary>
-        /// Попробовать откорретировать одну букву словоформы, чтобы получилось словарное слово
+        /// Попробовать откорректировать одну букву словоформы, чтобы получилось словарное слово. 
+        /// Делается изменение одной буквы, удаление одной буквы и вставка одной буквы. 
+        /// Если получается несколько вариантов, то возвращается null. Для получение всех вариантов используйте CorrectWordEx.
         /// </summary>
         /// <param name="word">искаженное слово</param>
         /// <param name="lang">возможный язык</param>
         /// <return>откорректированное слово или null при невозможности</return>
         public static string CorrectWord(string word, MorphLang lang = null)
         {
-            return m_Morph.CorrectWordByMorph(word, lang);
+            List<string> vars = m_Morph.CorrectWordByMorph(word, lang, true);
+            if (vars == null || vars.Count != 1) 
+                return null;
+            return vars[0];
+        }
+        /// <summary>
+        /// Попробовать откорректировать одну букву словоформы, чтобы получилось словарное слово. 
+        /// Делается изменение одной буквы, удаление одной буквы и вставка одной буквы.
+        /// </summary>
+        /// <param name="word">искаженное слово</param>
+        /// <param name="lang">возможный язык</param>
+        /// <return>"правильные" варианты или null</return>
+        public static List<string> CorrectWordEx(string word, MorphLang lang = null)
+        {
+            return m_Morph.CorrectWordByMorph(word, lang, false);
         }
         /// <summary>
         /// Преобразовать наречие в прилагательное (это пока только для русского языка)

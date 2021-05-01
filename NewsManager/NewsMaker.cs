@@ -17,10 +17,14 @@ namespace NewsManager
             Instruction = instruction;
         }
 
-        public async Task ProcessPagesAsync(InternetPage[] pages)
-        { 
+        public void ProcessPages(InternetPage[] pages)
+        {
             ParsePages(pages);
             AnalyzeTexts();
+        }
+        public async Task ProcessPagesAsync(InternetPage[] pages)
+        {
+            await Task.Run(() => ProcessPages(pages)).ConfigureAwait(false);
         }
 
         protected NewsArticle ParsePage(InternetPage page)
@@ -39,16 +43,28 @@ namespace NewsManager
                 }
                 catch
                 {
-                    News[i] = new NewsArticle(page.URL, page.HTML, "N/A", "N/A", DateTime.UnixEpoch);
+                    News[i] = new NewsArticle(
+                        page.URL,
+                        page.HTML,
+                        IParseInstruction.UndefinedString,
+                        IParseInstruction.UndefinedString,
+                        IParseInstruction.UndefinedDate);
                 }
             }
         }
 
         protected List<Referent> AnalyzeText(string text)
         {
-            Processor processor = ProcessorService.CreateProcessor();
-            AnalysisResult result = processor.Process(new SourceOfAnalysis(text));
-            return result.Entities;
+            try
+            {
+                Processor processor = ProcessorService.CreateProcessor();
+                AnalysisResult result = processor.Process(new SourceOfAnalysis(text));
+                return result.Entities;
+            }
+            catch
+            {
+                return new List<Referent>();
+            }
         }
         protected void AnalyzeTexts()
         {

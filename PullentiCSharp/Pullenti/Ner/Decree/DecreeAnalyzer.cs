@@ -1,5 +1,5 @@
 ﻿/*
- * SDK Pullenti Lingvo, version 4.4, march 2021. Copyright (c) 2013, Pullenti. All rights reserved. 
+ * SDK Pullenti Lingvo, version 4.5, april 2021. Copyright (c) 2013, Pullenti. All rights reserved. 
  * Non-Commercial Freeware and Commercial Software.
  * This class is generated using the converter Unisharping (www.unisharping.ru) from Pullenti C# project. 
  * The latest version of the code is available on the site www.pullenti.ru
@@ -3412,7 +3412,7 @@ namespace Pullenti.Ner.Decree
                 }
                 break;
             }
-            if ((res.Count == 0 && date != null && num != null) && t1 != null) 
+            if ((res.Count == 0 && date != null && ((num != null || typ.EndsWith("ГАЗЕТА")))) && t1 != null) 
             {
                 DecreeReferent pub = new DecreeReferent();
                 pub.Typ = typ;

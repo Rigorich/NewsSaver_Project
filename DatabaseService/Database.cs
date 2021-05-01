@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using GeneralClasses;
 using ServiceStack;
+using ServiceStack.Text;
 using static ServiceStack.Text.JsonSerializer;
 
 namespace DatabaseService
@@ -22,7 +23,7 @@ namespace DatabaseService
                 json = sr.ReadToEnd();
                 sr.Close();
             }
-            News = DeserializeFromString<List<NewsArticle>>(json);
+            News = DeserializeFromString< List<NewsArticle> >(json);
             News ??= new List<NewsArticle>();
             return News;
         }
@@ -46,10 +47,11 @@ namespace DatabaseService
         {
             using (var fs = new FileStream(FileName, FileMode.Create))
             {
-                string json = SerializeToString(news);
+                string json = SerializeToString(news).IndentJson();
                 var sw = new StreamWriter(fs);
                 sw.Write(json);
                 sw.Flush();
+                sw.Close();
             }
         }
         

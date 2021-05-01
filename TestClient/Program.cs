@@ -26,14 +26,46 @@ namespace TestClient
             NewsArticle[] articles;
 
             Console.WriteLine("Let's get some news!");
-            articles = news.Get(new NewsRequest()).Result;
+            Console.WriteLine("Enter site name as part of url or nothing for random news article:");
+            string site = Console.ReadLine();
+            int count;
+            if (string.IsNullOrWhiteSpace(site))
+            {
+                Console.WriteLine("Random news!");
+                site = null;
+                count = 1;
+            }
+            else
+            {
+                Console.WriteLine("Enter articles count or nothing for 3 news articles:");
+                count = Console.ReadLine().ToInt(3);
+            }
+            Console.WriteLine("Please stand by...");
+
+            try
+            {
+                articles = news.Get(new NewsRequest() { Url = site, Count = count }).Result;
+            }
+            catch (WebServiceException ex)
+            {
+                Console.WriteLine("ERROR - " + ex.StatusCode + " " + ex.ErrorCode + " : " + ex.Message);
+                return;
+            }
 
             Console.WriteLine("POST ARTICLES");
             foreach (var article in articles)
             {
-                Console.ReadLine();
-                var answer = db.Post(new SaveRequest() { Article = article }).Result;
-                Console.WriteLine(answer + " <- " + article.Name);
+                Console.WriteLine();
+                bool success = false;
+                try
+                {
+                    success = db.Post(new SaveRequest() { Article = article }).Result;
+                }
+                catch (WebServiceException ex)
+                {
+                    Console.WriteLine("ERROR - " + ex.StatusCode + " " + ex.ErrorCode + " : " + ex.Message);
+                }
+                Console.WriteLine(success + " <- " + article.URL);
             }
             Console.WriteLine("\nEND POST ARTICLES");
             Console.ReadLine();
@@ -54,47 +86,72 @@ namespace TestClient
                 Console.WriteLine("END FULL LIST");
                 Console.ReadLine();
             }
-            
+
             // DATE FILTER
-            Console.WriteLine("GET DATE LIST");
-            Console.WriteLine("Enter date:");
-            date = Console.ReadLine();
-            articles = db.Get(new ListRequest() { Date = date }).Result;
-            foreach (var article in articles)
             {
-                Console.WriteLine(article.Formatted());
+                Console.WriteLine("GET DATE LIST");
+                Console.WriteLine("Enter date:");
+                date = Console.ReadLine();
+                articles = db.Get(new ListRequest() { Date = date }).Result;
+                foreach (var article in articles)
+                {
+                    Console.WriteLine(article.Formatted());
+                }
+                Console.WriteLine("END DATE LIST");
+                Console.ReadLine();
             }
-            Console.WriteLine("END DATE LIST");
-            Console.ReadLine();
 
             // URL FILTER
-            Console.WriteLine("GET URL LIST");
-            Console.WriteLine("Enter url:");
-            url = Console.ReadLine();
-            articles = db.Get(new ListRequest() { Url = url }).Result;
-            foreach (var article in articles)
             {
-                Console.WriteLine(article.Formatted());
+                Console.WriteLine("GET URL LIST");
+                Console.WriteLine("Enter url:");
+                url = Console.ReadLine();
+                articles = db.Get(new ListRequest() { Url = url }).Result;
+                foreach (var article in articles)
+                {
+                    Console.WriteLine(article.Formatted());
+                }
+                Console.WriteLine("END URL LIST");
+                Console.ReadLine();
             }
-            Console.WriteLine("END URL LIST");
-            Console.ReadLine();
 
             // URL&DATE FILTER
-            Console.WriteLine("GET URL&DATE LIST");
-            Console.ReadLine();
-            Console.WriteLine($"URL = {url}");
-            Console.WriteLine($"Date = {date}");
-            articles = db.Get(new ListRequest() { Url = url, Date = date }).Result;
-            foreach (var article in articles)
             {
-                Console.WriteLine(article.Formatted());
+                Console.WriteLine("GET URL&DATE LIST");
+                Console.ReadLine();
+                Console.WriteLine($"URL = {url}");
+                Console.WriteLine($"Date = {date}");
+                articles = db.Get(new ListRequest() { Url = url, Date = date }).Result;
+                foreach (var article in articles)
+                {
+                    Console.WriteLine(article.Formatted());
+                }
+                Console.WriteLine("END URL&DATE LIST");
+                Console.ReadLine();
             }
-            Console.WriteLine("END URL&DATE LIST");
-            Console.ReadLine();
 
 
             Console.WriteLine("\nEND GET LIST");
             Console.ReadLine();
+
+            // ONE ARTICLE
+            {
+                Console.WriteLine("GET ARTICLE");
+                Console.WriteLine("Enter url:");
+                url = Console.ReadLine();
+                NewsArticle article = db.Get(new ArticleRequest() { Url = url }).Result;
+                if (article is null)
+                {
+                    Console.WriteLine("There is no such article");
+                }
+                else
+                {
+                    Console.WriteLine(article.Formatted());
+                    Console.WriteLine(article.Text);
+                }
+                Console.WriteLine("END ARTICLE");
+                Console.ReadLine();
+            }
         }
     }
 }

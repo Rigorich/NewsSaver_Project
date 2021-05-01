@@ -1,5 +1,5 @@
 ﻿/*
- * SDK Pullenti Lingvo, version 4.4, march 2021. Copyright (c) 2013, Pullenti. All rights reserved. 
+ * SDK Pullenti Lingvo, version 4.5, april 2021. Copyright (c) 2013, Pullenti. All rights reserved. 
  * Non-Commercial Freeware and Commercial Software.
  * This class is generated using the converter Unisharping (www.unisharping.ru) from Pullenti C# project. 
  * The latest version of the code is available on the site www.pullenti.ru
@@ -720,7 +720,7 @@ namespace Pullenti.Ner.Core
                 v.Add("Ь");
                 vars.Add(v);
             }
-            StringBuilder fStrTmp = new StringBuilder();
+            StringBuilder strTmp = new StringBuilder();
             List<int> inds = new List<int>(vars.Count);
             for (i = 0; i < vars.Count; i++) 
             {
@@ -728,13 +728,13 @@ namespace Pullenti.Ner.Core
             }
             while (true) 
             {
-                fStrTmp.Length = 0;
+                strTmp.Length = 0;
                 for (i = 0; i < vars.Count; i++) 
                 {
                     if (vars[i].Count > 0) 
-                        fStrTmp.Append(vars[i][inds[i]]);
+                        strTmp.Append(vars[i][inds[i]]);
                 }
-                res.Add(fStrTmp.ToString());
+                res.Add(strTmp.ToString());
                 for (i = inds.Count - 1; i >= 0; i--) 
                 {
                     inds[i]++;

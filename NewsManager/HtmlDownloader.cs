@@ -15,7 +15,7 @@ namespace NewsManager
         public DownloaderInstruction Instruction { get; protected set; }
         public InternetPage[] Pages { get; protected set; }
 
-        protected List<InternetPage> tempPages { get; set; }
+        protected List<InternetPage> TempPages { get; set; }
 
         public int PagesLimit { get; protected set; }
         public int MinCrawlDelayMilliSeconds { get; protected set; }
@@ -33,7 +33,7 @@ namespace NewsManager
         public async Task DownloadPagesAsync()
         {
             Pages = null;
-            tempPages = new List<InternetPage>();
+            TempPages = new List<InternetPage>();
 
             var config = new CrawlConfiguration
             {
@@ -42,7 +42,17 @@ namespace NewsManager
                 MinCrawlDelayPerDomainMilliSeconds = MinCrawlDelayMilliSeconds,
             };
 
-            var crawler = new PoliteWebCrawler(config);
+            var crawler = new PoliteWebCrawler(
+                config,
+                null,
+                null,
+                null,
+                null,
+                Instruction.GetLinkExtractor(),
+                null,
+                null,
+                null
+                );
 
             crawler.ShouldCrawlPageDecisionMaker = (pageToCrawl, crawlContext) =>
             {
@@ -56,23 +66,23 @@ namespace NewsManager
 
             crawler.PageCrawlCompleted += Crawler_OnePageCompleted;
 
-            var crawlResult = await crawler.CrawlAsync(new Uri(Instruction.MainPageUrl));
+            var crawlResult = await crawler.CrawlAsync(new Uri(Instruction.MainPageUrl)).ConfigureAwait(false);
 
             Crawler_AllPagesCompleted();
         }
         protected void Crawler_OnePageCompleted(object sender, PageCrawlCompletedArgs e)
         {
             var url = e.CrawledPage.Uri.AbsoluteUri;
-            var hrml = e.CrawledPage.Content.Text;
+            var html = e.CrawledPage.Content.Text;
             if (url != Instruction.MainPageUrl)
             {
-                tempPages.Add(new InternetPage(url, hrml));
+                TempPages.Add(new InternetPage(url, html));
             }
         }
         protected void Crawler_AllPagesCompleted()
         {
-            Pages = tempPages.ToArray();
-            tempPages = null;
+            Pages = TempPages.ToArray();
+            TempPages = null;
         }
     }
 }

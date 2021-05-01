@@ -1,5 +1,5 @@
 ﻿/*
- * SDK Pullenti Lingvo, version 4.4, march 2021. Copyright (c) 2013, Pullenti. All rights reserved. 
+ * SDK Pullenti Lingvo, version 4.5, april 2021. Copyright (c) 2013, Pullenti. All rights reserved. 
  * Non-Commercial Freeware and Commercial Software.
  * This class is generated using the converter Unisharping (www.unisharping.ru) from Pullenti C# project. 
  * The latest version of the code is available on the site www.pullenti.ru
@@ -14,6 +14,457 @@ namespace Pullenti.Semantic.Internal
 {
     class Sentence : IComparable<Sentence>
     {
+        public List<SentItem> Items = new List<SentItem>();
+        public double Coef = 0;
+        public SentenceVariant BestVar;
+        public List<Subsent> Subs = new List<Subsent>();
+        public Pullenti.Semantic.SemBlock ResBlock;
+        public NGLinkType LastNounToFirstVerb = NGLinkType.Undefined;
+        public NGLinkType NotLastNounToFirstVerb = NGLinkType.Undefined;
+        public Pullenti.Ner.TextToken LastChar;
+        public override string ToString()
+        {
+            StringBuilder res = new StringBuilder();
+            if (Coef > 0) 
+                res.AppendFormat("{0}: ", Coef);
+            foreach (SentItem it in Items) 
+            {
+                if (it != Items[0]) 
+                    res.Append("; \r\n");
+                res.Append(it.ToString());
+            }
+            return res.ToString();
+        }
+        public void AddToBlock(Pullenti.Semantic.SemBlock blk, Pullenti.Semantic.SemGraph gr = null)
+        {
+            if (ResBlock != null) 
+            {
+                if (gr == null) 
+                    blk.AddFragments(ResBlock);
+                else 
+                    foreach (Pullenti.Semantic.SemFragment fr in ResBlock.Fragments) 
+                    {
+                        gr.Objects.AddRange(fr.Graph.Objects);
+                        gr.Links.AddRange(fr.Graph.Links);
+                    }
+            }
+            foreach (SentItem it in Items) 
+            {
+                if (it.SubSent != null) 
+                    it.SubSent.AddToBlock(blk, gr ?? it.ResFrag.Graph);
+            }
+        }
+        public static List<Sentence> ParseVariants(Pullenti.Ner.Token t0, Pullenti.Ner.Token t1, int lev, int maxCount = 0, SentItemType regime = SentItemType.Undefined)
+        {
+            if ((t0 == null || t1 == null || t0.EndChar > t1.EndChar) || lev > 100) 
+                return null;
+            List<Sentence> res = new List<Sentence>();
+            Sentence sent = new Sentence();
+            for (Pullenti.Ner.Token t = t0; t != null && t.EndChar <= t1.EndChar; t = t.Next) 
+            {
+                if (t.IsChar('(')) 
+                {
+                    Pullenti.Ner.Core.BracketSequenceToken br = Pullenti.Ner.Core.BracketHelper.TryParse(t, Pullenti.Ner.Core.BracketParseAttr.No, 100);
+                    if (br != null) 
+                    {
+                        t = br.EndToken;
+                        continue;
+                    }
+                }
+                List<SentItem> items = SentItem.ParseNearItems(t, t1, lev + 1, sent.Items);
+                if (items == null || items.Count == 0) 
+                    continue;
+                if (items.Count == 1 || ((maxCount > 0 && res.Count > maxCount))) 
+                {
+                    sent.Items.Add(items[0]);
+                    t = items[0].EndToken;
+                    if (regime != SentItemType.Undefined) 
+                    {
+                        SentItem it = items[0];
+                        if (it.CanBeNoun) 
+                        {
+                        }
+                        else if (it.Typ == SentItemType.Delim) 
+                            break;
+                        else if (it.Typ == SentItemType.Verb) 
+                        {
+                            if (regime == SentItemType.PartBefore) 
+                                break;
+                        }
+                    }
+                    continue;
+                }
+                Dictionary<int, List<Sentence>> m_Nexts = new Dictionary<int, List<Sentence>>();
+                foreach (SentItem it in items) 
+                {
+                    List<Sentence> nexts = null;
+                    if (!m_Nexts.TryGetValue(it.EndToken.EndChar, out nexts)) 
+                    {
+                        nexts = ParseVariants(it.EndToken.Next, t1, lev + 1, maxCount, SentItemType.Undefined);
+                        m_Nexts.Add(it.EndToken.EndChar, nexts);
+                    }
+                    if (nexts == null || nexts.Count == 0) 
+                    {
+                        Sentence se = new Sentence();
+                        foreach (SentItem itt in sent.Items) 
+                        {
+                            SentItem itt1 = new SentItem(null);
+                            itt1.CopyFrom(itt);
+                            se.Items.Add(itt1);
+                        }
+                        SentItem itt0 = new SentItem(null);
+                        itt0.CopyFrom(it);
+                        se.Items.Add(itt0);
+                        res.Add(se);
+                    }
+                    else 
+                        foreach (Sentence sn in nexts) 
+                        {
+                            Sentence se = new Sentence();
+                            foreach (SentItem itt in sent.Items) 
+                            {
+                                SentItem itt1 = new SentItem(null);
+                                itt1.CopyFrom(itt);
+                                se.Items.Add(itt1);
+                            }
+                            SentItem itt0 = new SentItem(null);
+                            itt0.CopyFrom(it);
+                            se.Items.Add(itt0);
+                            foreach (SentItem itt in sn.Items) 
+                            {
+                                SentItem itt1 = new SentItem(null);
+                                itt1.CopyFrom(itt);
+                                se.Items.Add(itt1);
+                            }
+                            res.Add(se);
+                        }
+                }
+                return res;
+            }
+            if (sent.Items.Count == 0) 
+                return null;
+            res.Add(sent);
+            return res;
+        }
+        public int CompareTo(Sentence other)
+        {
+            if (Coef > other.Coef) 
+                return -1;
+            if (Coef < other.Coef) 
+                return 1;
+            return 0;
+        }
+        public void CalcCoef(bool noResult)
+        {
+            Coef = 0;
+            for (int i = 0; i < Items.Count; i++) 
+            {
+                SentItem it = Items[i];
+                if (it.Typ != SentItemType.Adverb) 
+                    continue;
+                AdverbToken adv = it.Source as AdverbToken;
+                if (adv.Typ == Pullenti.Semantic.SemAttributeType.Undefined) 
+                    continue;
+                SentItem before = null;
+                SentItem after = null;
+                for (int ii = i - 1; ii >= 0; ii--) 
+                {
+                    SentItem it0 = Items[ii];
+                    if (it0.Typ == SentItemType.Verb) 
+                    {
+                        before = it0;
+                        break;
+                    }
+                    else if (it0.Typ == SentItemType.Adverb) 
+                    {
+                        if ((it0.Source as AdverbToken).Typ == Pullenti.Semantic.SemAttributeType.Undefined) 
+                        {
+                            before = it0;
+                            break;
+                        }
+                    }
+                    else if (it0.CanBeCommaEnd) 
+                        break;
+                    else if (it0.Typ == SentItemType.Formula && ((adv.Typ == Pullenti.Semantic.SemAttributeType.Great || adv.Typ == Pullenti.Semantic.SemAttributeType.Less))) 
+                    {
+                        before = it0;
+                        break;
+                    }
+                }
+                bool commaAfter = false;
+                for (int ii = i + 1; ii < Items.Count; ii++) 
+                {
+                    SentItem it0 = Items[ii];
+                    if (it0.Typ == SentItemType.Verb) 
+                    {
+                        after = it0;
+                        break;
+                    }
+                    else if (it0.Typ == SentItemType.Adverb) 
+                    {
+                        if ((it0.Source as AdverbToken).Typ == Pullenti.Semantic.SemAttributeType.Undefined) 
+                        {
+                            after = it0;
+                            break;
+                        }
+                    }
+                    else if (it0.CanBeCommaEnd) 
+                        commaAfter = true;
+                    else if (it0.Typ == SentItemType.Formula && ((adv.Typ == Pullenti.Semantic.SemAttributeType.Great || adv.Typ == Pullenti.Semantic.SemAttributeType.Less))) 
+                    {
+                        before = it0;
+                        break;
+                    }
+                    else if (it0.Typ == SentItemType.Noun) 
+                        commaAfter = true;
+                    else 
+                        break;
+                }
+                if (before != null && after != null) 
+                {
+                    if (before.Typ == SentItemType.Formula) 
+                        after = null;
+                    else if (after.Typ == SentItemType.Formula) 
+                        before = null;
+                    else if (commaAfter) 
+                        after = null;
+                }
+                if (after != null) 
+                {
+                    after.AddAttr(adv);
+                    Items.RemoveAt(i);
+                    i--;
+                    continue;
+                }
+                if (before != null) 
+                {
+                    before.AddAttr(adv);
+                    Items.RemoveAt(i);
+                    i--;
+                    continue;
+                }
+            }
+            List<NGSegment> segs = NGSegment.CreateSegments(this);
+            if (LastNounToFirstVerb != NGLinkType.Undefined || NotLastNounToFirstVerb != NGLinkType.Undefined) 
+            {
+                if (segs.Count != 1 || segs[0].Items.Count == 0) 
+                {
+                    if (LastNounToFirstVerb != NGLinkType.Undefined) 
+                    {
+                        Coef = -1;
+                        return;
+                    }
+                }
+                else 
+                {
+                    NGItem last = segs[0].Items[segs[0].Items.Count - 1];
+                    for (int i = last.Links.Count - 1; i >= 0; i--) 
+                    {
+                        NGLink li = last.Links[i];
+                        if (LastNounToFirstVerb != NGLinkType.Undefined) 
+                        {
+                            if (li.Typ == LastNounToFirstVerb && li.ToVerb == segs[0].BeforeVerb) 
+                                li.CanBeParticiple = true;
+                            else 
+                                last.Links.RemoveAt(i);
+                        }
+                        else if (NotLastNounToFirstVerb != NGLinkType.Undefined) 
+                        {
+                            if (li.Typ == NotLastNounToFirstVerb && li.ToVerb == segs[0].BeforeVerb) 
+                            {
+                                last.Links.RemoveAt(i);
+                                break;
+                            }
+                        }
+                    }
+                    if (last.Links.Count == 0) 
+                    {
+                        Coef = -1;
+                        return;
+                    }
+                }
+            }
+            foreach (NGSegment seg in segs) 
+            {
+                seg.Ind = 0;
+                seg.CreateVariants(100);
+            }
+            List<SentenceVariant> svars = new List<SentenceVariant>();
+            SentenceVariant svar = null;
+            for (int kkk = 0; kkk < 1000; kkk++) 
+            {
+                if (svar == null) 
+                    svar = new SentenceVariant();
+                else 
+                    svar.Segs.Clear();
+                for (int i = 0; i < segs.Count; i++) 
+                {
+                    NGSegment it = segs[i];
+                    if (it.Ind < it.Variants.Count) 
+                        svar.Segs.Add(it.Variants[it.Ind]);
+                    else 
+                        svar.Segs.Add(null);
+                }
+                svar.CalcCoef();
+                if (svar.Coef >= 0) 
+                {
+                    svars.Add(svar);
+                    svar = null;
+                    if (svars.Count > 100) 
+                    {
+                        this._sortVars(svars);
+                        svars.RemoveRange(10, svars.Count - 10);
+                    }
+                }
+                int j;
+                for (j = segs.Count - 1; j >= 0; j--) 
+                {
+                    NGSegment it = segs[j];
+                    if ((++it.Ind) >= it.Variants.Count) 
+                        it.Ind = 0;
+                    else 
+                        break;
+                }
+                if (j < 0) 
+                    break;
+            }
+            this._sortVars(svars);
+            if (svars.Count > 0) 
+            {
+                BestVar = svars[0];
+                Coef = BestVar.Coef;
+            }
+            else 
+            {
+            }
+            foreach (SentItem it in Items) 
+            {
+                if (it.SubSent != null) 
+                    Coef += it.SubSent.Coef;
+            }
+            foreach (SentItem it in Items) 
+            {
+                if (it.ParticipleCoef > 0) 
+                    Coef *= it.ParticipleCoef;
+            }
+            Subs = Subsent.CreateSubsents(this);
+            if (Items.Count == 0) 
+                return;
+            if (noResult) 
+                return;
+            ResBlock = new Pullenti.Semantic.SemBlock(null);
+            foreach (Subsent sub in Subs) 
+            {
+                sub.ResFrag = new Pullenti.Semantic.SemFragment(ResBlock);
+                ResBlock.Fragments.Add(sub.ResFrag);
+                sub.ResFrag.IsOr = sub.IsOr;
+                foreach (SentItem it in sub.Items) 
+                {
+                    if (sub.ResFrag.BeginToken == null) 
+                        sub.ResFrag.BeginToken = it.BeginToken;
+                    sub.ResFrag.EndToken = it.EndToken;
+                    if (it.ResGraph != null) 
+                    {
+                    }
+                    it.ResGraph = sub.ResFrag.Graph;
+                    it.ResFrag = sub.ResFrag;
+                }
+            }
+            foreach (Subsent sub in Subs) 
+            {
+                if (sub.ResFrag == null || sub.Owner == null || sub.Owner.ResFrag == null) 
+                    continue;
+                if (sub.Typ == Pullenti.Semantic.SemFraglinkType.Undefined) 
+                    continue;
+                ResBlock.AddLink(sub.Typ, sub.ResFrag, sub.Owner.ResFrag, sub.Question);
+            }
+            this.CreateResult(ResBlock);
+        }
+        void _sortVars(List<SentenceVariant> vars)
+        {
+            vars.Sort();
+        }
+        public bool TruncOborot(bool isParticiple)
+        {
+            if (BestVar == null || BestVar.Segs.Count == 0) 
+            {
+                if (Items.Count > 1) 
+                {
+                    Items.RemoveRange(1, Items.Count - 1);
+                    return true;
+                }
+                return false;
+            }
+            bool ret = false;
+            int ind = 0;
+            if (BestVar.Segs[0] == null && !isParticiple) 
+            {
+                for (ind = 1; ind < Items.Count; ind++) 
+                {
+                    if (Items[ind].CanBeCommaEnd) 
+                        break;
+                }
+            }
+            else 
+                foreach (NGSegmentVariant seg in BestVar.Segs) 
+                {
+                    if (seg == null) 
+                        break;
+                    foreach (NGLink li in seg.Links) 
+                    {
+                        if (li == null) 
+                            continue;
+                        ret = true;
+                        int ii = Items.IndexOf(li.From.Source);
+                        if (ii < 0) 
+                            continue;
+                        if (li.ToVerb != null) 
+                        {
+                            if (li.ToVerb == seg.Source.BeforeVerb) 
+                                ind = ii + 1;
+                            else if (!isParticiple && seg == BestVar.Segs[0] && li.ToVerb == seg.Source.AfterVerb) 
+                            {
+                                for (ii = ind; ii < Items.Count; ii++) 
+                                {
+                                    if (Items[ii].Source == li.ToVerb) 
+                                    {
+                                        ind = ii + 1;
+                                        break;
+                                    }
+                                }
+                            }
+                            else 
+                                break;
+                        }
+                        else 
+                        {
+                            int jj = Items.IndexOf(li.To.Source);
+                            if (jj < 0) 
+                                continue;
+                            if (jj < ii) 
+                                ind = ii + 1;
+                            else 
+                                break;
+                        }
+                    }
+                    if (!isParticiple && seg == BestVar.Segs[0]) 
+                    {
+                    }
+                    else 
+                        break;
+                }
+            if (!ret && ind == 0) 
+            {
+                for (ind = 1; ind < Items.Count; ind++) 
+                {
+                    if (Items[ind].CanBeCommaEnd) 
+                        break;
+                }
+            }
+            if (ind > 0 && (ind < (Items.Count - 1))) 
+                Items.RemoveRange(ind, Items.Count - ind);
+            return ret;
+        }
         void _createLists(NGSegmentVariant s)
         {
             for (int i = 0; i < s.Links.Count; i++) 
@@ -569,457 +1020,6 @@ namespace Pullenti.Semantic.Internal
                     return it;
             }
             return null;
-        }
-        public List<SentItem> Items = new List<SentItem>();
-        public double Coef = 0;
-        public SentenceVariant BestVar;
-        public List<Subsent> Subs = new List<Subsent>();
-        public Pullenti.Semantic.SemBlock ResBlock;
-        public NGLinkType LastNounToFirstVerb = NGLinkType.Undefined;
-        public NGLinkType NotLastNounToFirstVerb = NGLinkType.Undefined;
-        public Pullenti.Ner.TextToken LastChar;
-        public override string ToString()
-        {
-            StringBuilder res = new StringBuilder();
-            if (Coef > 0) 
-                res.AppendFormat("{0}: ", Coef);
-            foreach (SentItem it in Items) 
-            {
-                if (it != Items[0]) 
-                    res.Append("; \r\n");
-                res.Append(it.ToString());
-            }
-            return res.ToString();
-        }
-        public void AddToBlock(Pullenti.Semantic.SemBlock blk, Pullenti.Semantic.SemGraph gr = null)
-        {
-            if (ResBlock != null) 
-            {
-                if (gr == null) 
-                    blk.AddFragments(ResBlock);
-                else 
-                    foreach (Pullenti.Semantic.SemFragment fr in ResBlock.Fragments) 
-                    {
-                        gr.Objects.AddRange(fr.Graph.Objects);
-                        gr.Links.AddRange(fr.Graph.Links);
-                    }
-            }
-            foreach (SentItem it in Items) 
-            {
-                if (it.SubSent != null) 
-                    it.SubSent.AddToBlock(blk, gr ?? it.ResFrag.Graph);
-            }
-        }
-        public static List<Sentence> ParseVariants(Pullenti.Ner.Token t0, Pullenti.Ner.Token t1, int lev, int maxCount = 0, SentItemType regime = SentItemType.Undefined)
-        {
-            if ((t0 == null || t1 == null || t0.EndChar > t1.EndChar) || lev > 100) 
-                return null;
-            List<Sentence> res = new List<Sentence>();
-            Sentence sent = new Sentence();
-            for (Pullenti.Ner.Token t = t0; t != null && t.EndChar <= t1.EndChar; t = t.Next) 
-            {
-                if (t.IsChar('(')) 
-                {
-                    Pullenti.Ner.Core.BracketSequenceToken br = Pullenti.Ner.Core.BracketHelper.TryParse(t, Pullenti.Ner.Core.BracketParseAttr.No, 100);
-                    if (br != null) 
-                    {
-                        t = br.EndToken;
-                        continue;
-                    }
-                }
-                List<SentItem> items = SentItem.ParseNearItems(t, t1, lev + 1, sent.Items);
-                if (items == null || items.Count == 0) 
-                    continue;
-                if (items.Count == 1 || ((maxCount > 0 && res.Count > maxCount))) 
-                {
-                    sent.Items.Add(items[0]);
-                    t = items[0].EndToken;
-                    if (regime != SentItemType.Undefined) 
-                    {
-                        SentItem it = items[0];
-                        if (it.CanBeNoun) 
-                        {
-                        }
-                        else if (it.Typ == SentItemType.Delim) 
-                            break;
-                        else if (it.Typ == SentItemType.Verb) 
-                        {
-                            if (regime == SentItemType.PartBefore) 
-                                break;
-                        }
-                    }
-                    continue;
-                }
-                Dictionary<int, List<Sentence>> m_Nexts = new Dictionary<int, List<Sentence>>();
-                foreach (SentItem it in items) 
-                {
-                    List<Sentence> nexts = null;
-                    if (!m_Nexts.TryGetValue(it.EndToken.EndChar, out nexts)) 
-                    {
-                        nexts = ParseVariants(it.EndToken.Next, t1, lev + 1, maxCount, SentItemType.Undefined);
-                        m_Nexts.Add(it.EndToken.EndChar, nexts);
-                    }
-                    if (nexts == null || nexts.Count == 0) 
-                    {
-                        Sentence se = new Sentence();
-                        foreach (SentItem itt in sent.Items) 
-                        {
-                            SentItem itt1 = new SentItem(null);
-                            itt1.CopyFrom(itt);
-                            se.Items.Add(itt1);
-                        }
-                        SentItem itt0 = new SentItem(null);
-                        itt0.CopyFrom(it);
-                        se.Items.Add(itt0);
-                        res.Add(se);
-                    }
-                    else 
-                        foreach (Sentence sn in nexts) 
-                        {
-                            Sentence se = new Sentence();
-                            foreach (SentItem itt in sent.Items) 
-                            {
-                                SentItem itt1 = new SentItem(null);
-                                itt1.CopyFrom(itt);
-                                se.Items.Add(itt1);
-                            }
-                            SentItem itt0 = new SentItem(null);
-                            itt0.CopyFrom(it);
-                            se.Items.Add(itt0);
-                            foreach (SentItem itt in sn.Items) 
-                            {
-                                SentItem itt1 = new SentItem(null);
-                                itt1.CopyFrom(itt);
-                                se.Items.Add(itt1);
-                            }
-                            res.Add(se);
-                        }
-                }
-                return res;
-            }
-            if (sent.Items.Count == 0) 
-                return null;
-            res.Add(sent);
-            return res;
-        }
-        public int CompareTo(Sentence other)
-        {
-            if (Coef > other.Coef) 
-                return -1;
-            if (Coef < other.Coef) 
-                return 1;
-            return 0;
-        }
-        public void CalcCoef(bool noResult)
-        {
-            Coef = 0;
-            for (int i = 0; i < Items.Count; i++) 
-            {
-                SentItem it = Items[i];
-                if (it.Typ != SentItemType.Adverb) 
-                    continue;
-                AdverbToken adv = it.Source as AdverbToken;
-                if (adv.Typ == Pullenti.Semantic.SemAttributeType.Undefined) 
-                    continue;
-                SentItem before = null;
-                SentItem after = null;
-                for (int ii = i - 1; ii >= 0; ii--) 
-                {
-                    SentItem it0 = Items[ii];
-                    if (it0.Typ == SentItemType.Verb) 
-                    {
-                        before = it0;
-                        break;
-                    }
-                    else if (it0.Typ == SentItemType.Adverb) 
-                    {
-                        if ((it0.Source as AdverbToken).Typ == Pullenti.Semantic.SemAttributeType.Undefined) 
-                        {
-                            before = it0;
-                            break;
-                        }
-                    }
-                    else if (it0.CanBeCommaEnd) 
-                        break;
-                    else if (it0.Typ == SentItemType.Formula && ((adv.Typ == Pullenti.Semantic.SemAttributeType.Great || adv.Typ == Pullenti.Semantic.SemAttributeType.Less))) 
-                    {
-                        before = it0;
-                        break;
-                    }
-                }
-                bool commaAfter = false;
-                for (int ii = i + 1; ii < Items.Count; ii++) 
-                {
-                    SentItem it0 = Items[ii];
-                    if (it0.Typ == SentItemType.Verb) 
-                    {
-                        after = it0;
-                        break;
-                    }
-                    else if (it0.Typ == SentItemType.Adverb) 
-                    {
-                        if ((it0.Source as AdverbToken).Typ == Pullenti.Semantic.SemAttributeType.Undefined) 
-                        {
-                            after = it0;
-                            break;
-                        }
-                    }
-                    else if (it0.CanBeCommaEnd) 
-                        commaAfter = true;
-                    else if (it0.Typ == SentItemType.Formula && ((adv.Typ == Pullenti.Semantic.SemAttributeType.Great || adv.Typ == Pullenti.Semantic.SemAttributeType.Less))) 
-                    {
-                        before = it0;
-                        break;
-                    }
-                    else if (it0.Typ == SentItemType.Noun) 
-                        commaAfter = true;
-                    else 
-                        break;
-                }
-                if (before != null && after != null) 
-                {
-                    if (before.Typ == SentItemType.Formula) 
-                        after = null;
-                    else if (after.Typ == SentItemType.Formula) 
-                        before = null;
-                    else if (commaAfter) 
-                        after = null;
-                }
-                if (after != null) 
-                {
-                    after.AddAttr(adv);
-                    Items.RemoveAt(i);
-                    i--;
-                    continue;
-                }
-                if (before != null) 
-                {
-                    before.AddAttr(adv);
-                    Items.RemoveAt(i);
-                    i--;
-                    continue;
-                }
-            }
-            List<NGSegment> segs = NGSegment.CreateSegments(this);
-            if (LastNounToFirstVerb != NGLinkType.Undefined || NotLastNounToFirstVerb != NGLinkType.Undefined) 
-            {
-                if (segs.Count != 1 || segs[0].Items.Count == 0) 
-                {
-                    if (LastNounToFirstVerb != NGLinkType.Undefined) 
-                    {
-                        Coef = -1;
-                        return;
-                    }
-                }
-                else 
-                {
-                    NGItem last = segs[0].Items[segs[0].Items.Count - 1];
-                    for (int i = last.Links.Count - 1; i >= 0; i--) 
-                    {
-                        NGLink li = last.Links[i];
-                        if (LastNounToFirstVerb != NGLinkType.Undefined) 
-                        {
-                            if (li.Typ == LastNounToFirstVerb && li.ToVerb == segs[0].BeforeVerb) 
-                                li.CanBeParticiple = true;
-                            else 
-                                last.Links.RemoveAt(i);
-                        }
-                        else if (NotLastNounToFirstVerb != NGLinkType.Undefined) 
-                        {
-                            if (li.Typ == NotLastNounToFirstVerb && li.ToVerb == segs[0].BeforeVerb) 
-                            {
-                                last.Links.RemoveAt(i);
-                                break;
-                            }
-                        }
-                    }
-                    if (last.Links.Count == 0) 
-                    {
-                        Coef = -1;
-                        return;
-                    }
-                }
-            }
-            foreach (NGSegment seg in segs) 
-            {
-                seg.Ind = 0;
-                seg.CreateVariants(100);
-            }
-            List<SentenceVariant> svars = new List<SentenceVariant>();
-            SentenceVariant svar = null;
-            for (int kkk = 0; kkk < 1000; kkk++) 
-            {
-                if (svar == null) 
-                    svar = new SentenceVariant();
-                else 
-                    svar.Segs.Clear();
-                for (int i = 0; i < segs.Count; i++) 
-                {
-                    NGSegment it = segs[i];
-                    if (it.Ind < it.Variants.Count) 
-                        svar.Segs.Add(it.Variants[it.Ind]);
-                    else 
-                        svar.Segs.Add(null);
-                }
-                svar.CalcCoef();
-                if (svar.Coef >= 0) 
-                {
-                    svars.Add(svar);
-                    svar = null;
-                    if (svars.Count > 100) 
-                    {
-                        this._sortVars(svars);
-                        svars.RemoveRange(10, svars.Count - 10);
-                    }
-                }
-                int j;
-                for (j = segs.Count - 1; j >= 0; j--) 
-                {
-                    NGSegment it = segs[j];
-                    if ((++it.Ind) >= it.Variants.Count) 
-                        it.Ind = 0;
-                    else 
-                        break;
-                }
-                if (j < 0) 
-                    break;
-            }
-            this._sortVars(svars);
-            if (svars.Count > 0) 
-            {
-                BestVar = svars[0];
-                Coef = BestVar.Coef;
-            }
-            else 
-            {
-            }
-            foreach (SentItem it in Items) 
-            {
-                if (it.SubSent != null) 
-                    Coef += it.SubSent.Coef;
-            }
-            foreach (SentItem it in Items) 
-            {
-                if (it.ParticipleCoef > 0) 
-                    Coef *= it.ParticipleCoef;
-            }
-            Subs = Subsent.CreateSubsents(this);
-            if (Items.Count == 0) 
-                return;
-            if (noResult) 
-                return;
-            ResBlock = new Pullenti.Semantic.SemBlock(null);
-            foreach (Subsent sub in Subs) 
-            {
-                sub.ResFrag = new Pullenti.Semantic.SemFragment(ResBlock);
-                ResBlock.Fragments.Add(sub.ResFrag);
-                sub.ResFrag.IsOr = sub.IsOr;
-                foreach (SentItem it in sub.Items) 
-                {
-                    if (sub.ResFrag.BeginToken == null) 
-                        sub.ResFrag.BeginToken = it.BeginToken;
-                    sub.ResFrag.EndToken = it.EndToken;
-                    if (it.ResGraph != null) 
-                    {
-                    }
-                    it.ResGraph = sub.ResFrag.Graph;
-                    it.ResFrag = sub.ResFrag;
-                }
-            }
-            foreach (Subsent sub in Subs) 
-            {
-                if (sub.ResFrag == null || sub.Owner == null || sub.Owner.ResFrag == null) 
-                    continue;
-                if (sub.Typ == Pullenti.Semantic.SemFraglinkType.Undefined) 
-                    continue;
-                ResBlock.AddLink(sub.Typ, sub.ResFrag, sub.Owner.ResFrag, sub.Question);
-            }
-            this.CreateResult(ResBlock);
-        }
-        void _sortVars(List<SentenceVariant> vars)
-        {
-            vars.Sort();
-        }
-        public bool TruncOborot(bool isParticiple)
-        {
-            if (BestVar == null || BestVar.Segs.Count == 0) 
-            {
-                if (Items.Count > 1) 
-                {
-                    Items.RemoveRange(1, Items.Count - 1);
-                    return true;
-                }
-                return false;
-            }
-            bool ret = false;
-            int ind = 0;
-            if (BestVar.Segs[0] == null && !isParticiple) 
-            {
-                for (ind = 1; ind < Items.Count; ind++) 
-                {
-                    if (Items[ind].CanBeCommaEnd) 
-                        break;
-                }
-            }
-            else 
-                foreach (NGSegmentVariant seg in BestVar.Segs) 
-                {
-                    if (seg == null) 
-                        break;
-                    foreach (NGLink li in seg.Links) 
-                    {
-                        if (li == null) 
-                            continue;
-                        ret = true;
-                        int ii = Items.IndexOf(li.From.Source);
-                        if (ii < 0) 
-                            continue;
-                        if (li.ToVerb != null) 
-                        {
-                            if (li.ToVerb == seg.Source.BeforeVerb) 
-                                ind = ii + 1;
-                            else if (!isParticiple && seg == BestVar.Segs[0] && li.ToVerb == seg.Source.AfterVerb) 
-                            {
-                                for (ii = ind; ii < Items.Count; ii++) 
-                                {
-                                    if (Items[ii].Source == li.ToVerb) 
-                                    {
-                                        ind = ii + 1;
-                                        break;
-                                    }
-                                }
-                            }
-                            else 
-                                break;
-                        }
-                        else 
-                        {
-                            int jj = Items.IndexOf(li.To.Source);
-                            if (jj < 0) 
-                                continue;
-                            if (jj < ii) 
-                                ind = ii + 1;
-                            else 
-                                break;
-                        }
-                    }
-                    if (!isParticiple && seg == BestVar.Segs[0]) 
-                    {
-                    }
-                    else 
-                        break;
-                }
-            if (!ret && ind == 0) 
-            {
-                for (ind = 1; ind < Items.Count; ind++) 
-                {
-                    if (Items[ind].CanBeCommaEnd) 
-                        break;
-                }
-            }
-            if (ind > 0 && (ind < (Items.Count - 1))) 
-                Items.RemoveRange(ind, Items.Count - ind);
-            return ret;
         }
     }
 }

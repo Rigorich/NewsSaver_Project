@@ -18,8 +18,9 @@ namespace NewsManager
         {
             HtmlDownloader downloader = new HtmlDownloader(instruction, maxNewsCount + 1, crawlMinimumDelayMilliSeconds);
             NewsMaker maker = new NewsMaker(instruction);
-            await downloader.DownloadPagesAsync();
-            await maker.ProcessPagesAsync(downloader.Pages);
+            await downloader.DownloadPagesAsync().ConfigureAwait(false);
+            //await maker.ProcessPagesAsync(downloader.Pages).ConfigureAwait(false);
+            maker.ProcessPages(downloader.Pages);
             return maker.News;
         }
     }

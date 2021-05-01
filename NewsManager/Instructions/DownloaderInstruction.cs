@@ -8,5 +8,9 @@ namespace NewsManager.Instructions
         public abstract int CrawlDepth { get; protected set; }
 
         public abstract bool IsNeedToDownload(string url);
+        public virtual Abot2.Core.IHtmlParser GetLinkExtractor()
+        {
+            return null;
+        }
     }
 }

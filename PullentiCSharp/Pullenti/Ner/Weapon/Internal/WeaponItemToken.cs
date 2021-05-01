@@ -1,5 +1,5 @@
 ﻿/*
- * SDK Pullenti Lingvo, version 4.4, march 2021. Copyright (c) 2013, Pullenti. All rights reserved. 
+ * SDK Pullenti Lingvo, version 4.5, april 2021. Copyright (c) 2013, Pullenti. All rights reserved. 
  * Non-Commercial Freeware and Commercial Software.
  * This class is generated using the converter Unisharping (www.unisharping.ru) from Pullenti C# project. 
  * The latest version of the code is available on the site www.pullenti.ru
@@ -12,7 +12,7 @@ using System.Text;
 
 namespace Pullenti.Ner.Weapon.Internal
 {
-    class WeaponItemToken : Pullenti.Ner.MetaToken
+    public class WeaponItemToken : Pullenti.Ner.MetaToken
     {
         public WeaponItemToken(Pullenti.Ner.Token begin, Pullenti.Ner.Token end) : base(begin, end, null)
         {

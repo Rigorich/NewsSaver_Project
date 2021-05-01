@@ -9,7 +9,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Pullenti.Core", "..\Pullent
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DatabaseService", "..\DatabaseService\DatabaseService.csproj", "{1EAA95F1-64AB-418D-9E05-AE6129D15DC3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestClient", "..\TestClient\TestClient.csproj", "{0F3D1EAC-17DD-49D6-A054-86EB57C7E640}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestClient", "..\TestClient\TestClient.csproj", "{0F3D1EAC-17DD-49D6-A054-86EB57C7E640}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -1,5 +1,5 @@
 ﻿/*
- * SDK Pullenti Lingvo, version 4.4, march 2021. Copyright (c) 2013, Pullenti. All rights reserved. 
+ * SDK Pullenti Lingvo, version 4.5, april 2021. Copyright (c) 2013, Pullenti. All rights reserved. 
  * Non-Commercial Freeware and Commercial Software.
  * This class is generated using the converter Unisharping (www.unisharping.ru) from Pullenti C# project. 
  * The latest version of the code is available on the site www.pullenti.ru
@@ -88,7 +88,7 @@ namespace Pullenti.Semantic.Core
                 t = mt.EndToken;
             foreach (Pullenti.Semantic.Utils.DerivateWord w in gr.Words) 
             {
-                if (w.Class != null && w.Class.IsNoun && w.Lang.IsRu) 
+                if (w.Class != null && w.Class.IsNoun && ((w.Lang == null || w.Lang.IsRu))) 
                 {
                     if (t.IsValue(w.Spelling, null)) 
                         return w;
@@ -349,90 +349,93 @@ namespace Pullenti.Semantic.Core
             bool noInstr = false;
             if (prep == null && morph.Case.IsNominative && !vpt1.FirstVerb.IsParticiple) 
             {
-                bool ok = true;
-                bool err = false;
-                Pullenti.Morph.MorphWordForm vm = vpt1.FirstVerb.VerbMorph;
-                if (vm == null) 
-                    return res;
-                if (vm.Number == Pullenti.Morph.MorphNumber.Singular) 
+                if (vpt1.FirstVerb.VerbMorph == null) 
+                    noNomin = true;
+                else 
                 {
-                    if (morph.Number == Pullenti.Morph.MorphNumber.Plural) 
+                    bool ok = true;
+                    bool err = false;
+                    Pullenti.Morph.MorphWordForm vm = vpt1.FirstVerb.VerbMorph;
+                    if (vm.Number == Pullenti.Morph.MorphNumber.Singular) 
                     {
-                        if (!vpt1.FirstVerb.IsVerbInfinitive) 
+                        if (morph.Number == Pullenti.Morph.MorphNumber.Plural) 
+                        {
+                            if (!vpt1.FirstVerb.IsVerbInfinitive) 
+                                ok = false;
+                        }
+                    }
+                    if (!CheckMorphAccord(morph, false, vm, false)) 
+                    {
+                        if (!err && !vpt1.FirstVerb.IsVerbInfinitive) 
                             ok = false;
                     }
-                }
-                if (!CheckMorphAccord(morph, false, vm, false)) 
-                {
-                    if (!err && !vpt1.FirstVerb.IsVerbInfinitive) 
-                        ok = false;
-                }
-                else if (vm.Misc.Person != Pullenti.Morph.MorphPerson.Undefined) 
-                {
-                    if (((vm.Misc.Person & Pullenti.Morph.MorphPerson.Third)) == Pullenti.Morph.MorphPerson.Undefined) 
+                    else if (vm.Misc.Person != Pullenti.Morph.MorphPerson.Undefined) 
                     {
-                        if (((vm.Misc.Person & Pullenti.Morph.MorphPerson.First)) == Pullenti.Morph.MorphPerson.First) 
+                        if (((vm.Misc.Person & Pullenti.Morph.MorphPerson.Third)) == Pullenti.Morph.MorphPerson.Undefined) 
                         {
-                            if (!morph.ContainsAttr("1 л.", null)) 
-                                ok = false;
-                        }
-                        if (((vm.Misc.Person & Pullenti.Morph.MorphPerson.Second)) == Pullenti.Morph.MorphPerson.Second) 
-                        {
-                            if (!morph.ContainsAttr("2 л.", null)) 
-                                ok = false;
+                            if (((vm.Misc.Person & Pullenti.Morph.MorphPerson.First)) == Pullenti.Morph.MorphPerson.First) 
+                            {
+                                if (!morph.ContainsAttr("1 л.", null)) 
+                                    ok = false;
+                            }
+                            if (((vm.Misc.Person & Pullenti.Morph.MorphPerson.Second)) == Pullenti.Morph.MorphPerson.Second) 
+                            {
+                                if (!morph.ContainsAttr("2 л.", null)) 
+                                    ok = false;
+                            }
                         }
                     }
-                }
-                noNomin = true;
-                if (ok) 
-                {
-                    Pullenti.Semantic.Utils.ControlModelItem cit00 = cit;
-                    bool isRev0 = isRev1;
-                    if (vpt1.FirstVerb != vpt1.LastVerb && ((vpt1.FirstVerb.IsVerbReversive || vpt1.FirstVerb.IsVerbPassive || vpt1.FirstVerb.Normal == "ИМЕТЬ"))) 
+                    noNomin = true;
+                    if (ok) 
                     {
-                        cit00 = null;
-                        isRev0 = true;
-                        List<Pullenti.Semantic.Utils.DerivateGroup> grs = FindDerivates(vpt1.FirstVerb);
-                        if (grs != null) 
+                        Pullenti.Semantic.Utils.ControlModelItem cit00 = cit;
+                        bool isRev0 = isRev1;
+                        if (vpt1.FirstVerb != vpt1.LastVerb && ((vpt1.FirstVerb.IsVerbReversive || vpt1.FirstVerb.IsVerbPassive || vpt1.FirstVerb.Normal == "ИМЕТЬ"))) 
                         {
-                            foreach (Pullenti.Semantic.Utils.DerivateGroup gg in grs) 
+                            cit00 = null;
+                            isRev0 = true;
+                            List<Pullenti.Semantic.Utils.DerivateGroup> grs = FindDerivates(vpt1.FirstVerb);
+                            if (grs != null) 
                             {
-                                if ((((cit00 = FindControlItem(vpt1.FirstVerb, gg)))) != null) 
+                                foreach (Pullenti.Semantic.Utils.DerivateGroup gg in grs) 
+                                {
+                                    if ((((cit00 = FindControlItem(vpt1.FirstVerb, gg)))) != null) 
+                                        break;
+                                }
+                            }
+                        }
+                        SemanticLink sl = null;
+                        bool addagent = false;
+                        if (cit00 == null) 
+                            sl = new SemanticLink() { Modelled = true, Role = (isRev0 ? SemanticRole.Pacient : SemanticRole.Agent), Rank = 1, Question = Pullenti.Semantic.Utils.ControlModelQuestion.BaseNominative, IsPassive = isRev0 };
+                        else 
+                            foreach (KeyValuePair<Pullenti.Semantic.Utils.ControlModelQuestion, SemanticRole> kp in cit00.Links) 
+                            {
+                                Pullenti.Semantic.Utils.ControlModelQuestion q = kp.Key;
+                                if (q.Check(null, Pullenti.Morph.MorphCase.Nominative)) 
+                                {
+                                    sl = new SemanticLink() { Role = kp.Value, Rank = 2, Question = q, IsPassive = isRev0 };
+                                    if (sl.Role == SemanticRole.Agent) 
+                                        sl.IsPassive = false;
+                                    else if (sl.Role == SemanticRole.Pacient && cit00.NominativeCanBeAgentAndPacient && vpt1.LastVerb.IsVerbReversive) 
+                                        addagent = true;
                                     break;
+                                }
                             }
-                        }
-                    }
-                    SemanticLink sl = null;
-                    bool addagent = false;
-                    if (cit00 == null) 
-                        sl = new SemanticLink() { Modelled = true, Role = (isRev0 ? SemanticRole.Pacient : SemanticRole.Agent), Rank = 1, Question = Pullenti.Semantic.Utils.ControlModelQuestion.BaseNominative, IsPassive = isRev0 };
-                    else 
-                        foreach (KeyValuePair<Pullenti.Semantic.Utils.ControlModelQuestion, SemanticRole> kp in cit00.Links) 
+                        if (sl != null) 
                         {
-                            Pullenti.Semantic.Utils.ControlModelQuestion q = kp.Key;
-                            if (q.Check(null, Pullenti.Morph.MorphCase.Nominative)) 
-                            {
-                                sl = new SemanticLink() { Role = kp.Value, Rank = 2, Question = q, IsPassive = isRev0 };
-                                if (sl.Role == SemanticRole.Agent) 
-                                    sl.IsPassive = false;
-                                else if (sl.Role == SemanticRole.Pacient && cit00.NominativeCanBeAgentAndPacient && vpt1.LastVerb.IsVerbReversive) 
-                                    addagent = true;
-                                break;
-                            }
+                            if (cit00 == null && morph.Case.IsInstrumental && isRev0) 
+                                sl.Rank -= 0.5;
+                            if (morph.Case.IsAccusative) 
+                                sl.Rank -= 0.5;
+                            if (sla2.BeginChar > vpt1.BeginChar) 
+                                sl.Rank -= 0.5;
+                            if (err) 
+                                sl.Rank -= 0.5;
+                            res.Add(sl);
+                            if (addagent) 
+                                res.Add(new SemanticLink() { Role = SemanticRole.Agent, Rank = sl.Rank, Question = sl.Question });
                         }
-                    if (sl != null) 
-                    {
-                        if (cit00 == null && morph.Case.IsInstrumental && isRev0) 
-                            sl.Rank -= 0.5;
-                        if (morph.Case.IsAccusative) 
-                            sl.Rank -= 0.5;
-                        if (sla2.BeginChar > vpt1.BeginChar) 
-                            sl.Rank -= 0.5;
-                        if (err) 
-                            sl.Rank -= 0.5;
-                        res.Add(sl);
-                        if (addagent) 
-                            res.Add(new SemanticLink() { Role = SemanticRole.Agent, Rank = sl.Rank, Question = sl.Question });
                     }
                 }
             }
