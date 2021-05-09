@@ -2,16 +2,20 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using GeneralClasses;
 using ServiceStack;
 using ServiceStack.Text;
 using static ServiceStack.Text.JsonSerializer;
+using BaseClasses;
 
 namespace DatabaseService
 {
     public static class Database
     {
         private static readonly string FileName = "TestDatabase.txt";
+
+        static Database()
+        {
+        }
 
         public static List<NewsArticle> GetAll()
         {
@@ -34,7 +38,7 @@ namespace DatabaseService
             NewsArticle article;
             try 
             { 
-                article = News.Where(art => art.URL == url).Last();
+                article = News.Where(art => art.URL == url).LastOrDefault();
             }
             catch
             {
@@ -55,41 +59,27 @@ namespace DatabaseService
             }
         }
         
-        public static bool Add(NewsArticle article)
+        public static void Add(NewsArticle article)
         {
             List<NewsArticle> News = GetAll();
-            foreach (var news in News)
+            if (News.Where(art => art.URL == article.URL && art.Text == article.Text).Count() > 0)
             {
-                if (news.URL == article.URL && news.Text == article.Text)
-                {
-                    return false;
-                }
+                return;
             }
             News.Add(article);
             SaveAll(News);
-            return true;
-        }
-        
-        public static List<NewsArticle> GetShortList()
-        {
-            List<NewsArticle> News = GetAll();
-            for (int i = 0; i < News.Count; i++)
-            {
-                News[i] = new NewsArticle(News[i].URL, null, News[i].Name, null, News[i].Date);
-            }
-            return News;
         }
 
         public delegate bool Filter(NewsArticle article);
         public static List<NewsArticle> GetFilteredList(Filter filter)
         {
-            List<NewsArticle> list = GetShortList();
+            List<NewsArticle> AllNews = GetAll();
             List<NewsArticle> FilteredNews = new List<NewsArticle>();
-            foreach (var heap in list)
+            foreach (NewsArticle article in AllNews)
             {
-                if (filter(heap))
+                if (filter(article))
                 {
-                    FilteredNews.Add(heap);
+                    FilteredNews.Add(new NewsArticle(article.URL, null, article.Name, null, article.Date));
                 }
             }
             return FilteredNews;

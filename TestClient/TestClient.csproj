@@ -10,13 +10,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\DatabaseService\DatabaseService.csproj" />
     <ProjectReference Include="..\ServerService\ServerService.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="GeneralClasses">
-      <HintPath>..\GeneralClasses\bin\Debug\netcoreapp3.1\GeneralClasses.dll</HintPath>
+    <Reference Include="BaseClasses">
+      <HintPath>..\BaseClasses\bin\Debug\netcoreapp3.1\BaseClasses.dll</HintPath>
     </Reference>
   </ItemGroup>
 

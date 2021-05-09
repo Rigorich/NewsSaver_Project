@@ -1,10 +1,12 @@
-using GeneralClasses;
+using BaseClasses;
 using ServiceStack;
 using System.Collections.Generic;
+using ManagerService;
+using DatabaseService;
 
 namespace ServerService
 {
-    [Route("/News")]
+    [Route("/news")]
     public class NewsRequest : IReturn<NewsResponse>
     {
         public string Url { get; set; } = null;
@@ -13,17 +15,8 @@ namespace ServerService
     }
     public class NewsResponse
     {
-        public NewsArticle[] Result { get; set; }
+        public NewsArticle[] ResultNews { get; set; }
+        public bool[] ResultIsSaved { get; set; }
     }
-    /*
-    [Route("/Article")]
-    public class ArticleRequest : IReturn<ArticleResponse>
-    {
-        public string Url { get; set; }
-    }
-    public class ArticleResponse
-    {
-        public NewsArticle Result { get; set; }
-    }
-    */
+
 }

@@ -1,6 +1,6 @@
 using System;
 using System.Linq;
-using GeneralClasses;
+using BaseClasses;
 using ServiceStack;
 
 namespace DatabaseService
@@ -28,18 +28,16 @@ namespace DatabaseService
                 }
             }
 
-            bool saved = false;
             try
             {
-                saved = Database.Add(article);
+                Database.Add(article);
             }
             catch
             {
-                return HttpError.Conflict($"We can't save your article");
+                return HttpError.BadRequest($"For some reason we can't save article {article.URL}");
             }
 
             var response = new SaveResponse();
-            response.Result = saved;
             return response;
         }
 
@@ -47,21 +45,50 @@ namespace DatabaseService
         public object Get(ListRequest request)
         {
             string requestUrl = request.Url;
+            string[] keywords = request.Keywords;
+            string[] entities = request.Entitities;
 
             DateTime? requestDate;
-            try
-            {
-                requestDate = DateTime.Parse(request.Date);
-            }
-            catch
+            if (request.Date.IsNullOrEmpty())
             {
                 requestDate = null;
             }
+            else
+            {
+                DateTime outDate;
+                if (DateTime.TryParse(request.Date, out outDate))
+                {
+                    requestDate = outDate;
+                }
+                else
+                {
+                    requestDate = DateTime.MaxValue;
+                }
+            }
+
 
             bool FilterFunction(NewsArticle article)
             {
-                if (!string.IsNullOrWhiteSpace(requestUrl) &&
-                    !article.URL.Contains(requestUrl))
+                if (!string.IsNullOrWhiteSpace(requestUrl) && !article.URL.Contains(requestUrl))
+                {
+                    return false;
+                }
+
+                if (!(keywords is null || keywords.IsEmpty()) &&
+                    (article.Name is null || 
+                    article.Text is null || 
+                    !keywords.All(word =>
+                    article.Name.ToLowerInvariant().Contains(word) ||
+                    article.Text.ToLowerInvariant().Contains(word))))
+                {
+                    return false;
+                }
+
+                if (!(entities is null || entities.IsEmpty()) &&
+                    (article.Entities is null ||
+                    !entities.All(ent => 
+                    article.Entities.Any(artent => 
+                    artent.ToLowerInvariant().Contains(ent)))))
                 {
                     return false;
                 }
@@ -77,10 +104,12 @@ namespace DatabaseService
                 return true;
             }
 
-            var list = Database.GetFilteredList(FilterFunction);
-
             var response = new ListResponse();
-            response.Result = list.ToArray();
+            response.Result = 
+                Database
+                .GetFilteredList(FilterFunction)
+                .OrderByDescending(a => a.Date)
+                .ToArray();
             return response;
         }
 
