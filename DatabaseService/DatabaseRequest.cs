@@ -19,9 +19,14 @@ namespace DatabaseService
     public class ListRequest : IReturn<ListResponse>
     {
         public string Url { get; set; } = null;
-        public string Date { get; set; } = null;
+        public DateTime LeftBoundDate { get; set; } = DateTime.MinValue;
+        public DateTime RightBoundDate { get; set; } = DateTime.MaxValue;
         public string[] Keywords { get; set; } = null;
         public string[] Entitities { get; set; } = null;
+
+        public int Skip { get; set; } = 0;
+        public int Count { get; set; } = 10;
+        public bool OldestFirst { get; set; } = false;
     }
     public class ListResponse
     {

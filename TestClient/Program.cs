@@ -13,6 +13,30 @@ namespace TestClient
             return article.Name + " (" + article.Date + ") " + article.URL;
         }
     }
+    public static class StringExtension
+    {
+        public static DateTime? ToDateTime(this string str)
+        {
+            DateTime? requestDate;
+            if (str.IsNullOrEmpty())
+            {
+                requestDate = null;
+            }
+            else
+            {
+                DateTime outDate;
+                if (DateTime.TryParse(str, out outDate))
+                {
+                    requestDate = outDate;
+                }
+                else
+                {
+                    requestDate = DateTime.MaxValue;
+                }
+            }
+            return requestDate;
+        }
+    }
     class Program
     {
         static void Main(string[] args)
@@ -20,7 +44,7 @@ namespace TestClient
             Console.WriteLine("Hello Tester! (Press Enter)");
             Console.ReadLine();
             var server = new JsonServiceClient("http://localhost:5000");
-
+            
             try
             {
                 Console.WriteLine("Let's get list of available sites!");
@@ -85,27 +109,39 @@ namespace TestClient
             {
                 Console.WriteLine("Continue? (Press Enter)"); Console.ReadLine();
                 Console.WriteLine("GET FILTER LIST");
-                string date, url;
+                string url;
+                DateTime? ldate, rdate;
                 string[] keywords, entities;
-                Console.WriteLine("Enter date:"); date = Console.ReadLine();
+                Console.WriteLine("Enter left bound date:"); ldate = Console.ReadLine().ToDateTime();
+                Console.WriteLine("Enter right bound date:"); rdate = Console.ReadLine().ToDateTime();
                 Console.WriteLine("Enter url:"); url = Console.ReadLine();
 
                 static string[] ParseLine(string s)
                 {
                     return s.Split(",").Select(w => w.ToLowerInvariant().Trim()).Where(w => !w.IsNullOrEmpty()).ToArray();
                 }
-                Console.WriteLine("Enter keywords separeted by comma:"); keywords = ParseLine(Console.ReadLine());
-                Console.WriteLine("Enter entities separeted by comma:"); entities = ParseLine(Console.ReadLine());
+                Console.WriteLine("Enter keywords separated by comma:"); keywords = ParseLine(Console.ReadLine());
+                Console.WriteLine("Enter entities separated by comma:"); entities = ParseLine(Console.ReadLine());
 
                 Console.WriteLine($"URL = {url}");
-                Console.WriteLine($"Date = {date}");
+                Console.WriteLine($"Dates = {ldate} - {rdate}");
                 Console.WriteLine($"Keywords = {keywords.Join(", ")}");
                 Console.WriteLine($"Entities = {entities.Join(", ")}");
 
                 Console.WriteLine("OK? (Press Enter)");
                 Console.ReadLine();
 
-                ListRequest request = new ListRequest() { Url = url, Date = date, Keywords = keywords, Entitities = entities };
+                ListRequest request = new ListRequest()
+                {
+                    Url = url,
+                    LeftBoundDate = ldate ?? DateTime.MinValue,
+                    RightBoundDate = rdate ?? DateTime.MinValue,
+                    Keywords = keywords,
+                    Entitities = entities,
+                    OldestFirst = true,
+                    Skip = 0,
+                    Count = 5
+                };
                 articles = server.Get(request).Result;
                 foreach (var article in articles)
                 {

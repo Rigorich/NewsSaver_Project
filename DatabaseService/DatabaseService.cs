@@ -44,29 +44,7 @@ namespace DatabaseService
         [AddHeader(ContentType = MimeTypes.Json)]
         public object Get(ListRequest request)
         {
-            string requestUrl = request.Url;
-            string[] keywords = request.Keywords;
-            string[] entities = request.Entitities;
-
-            DateTime? requestDate;
-            if (request.Date.IsNullOrEmpty())
-            {
-                requestDate = null;
-            }
-            else
-            {
-                DateTime outDate;
-                if (DateTime.TryParse(request.Date, out outDate))
-                {
-                    requestDate = outDate;
-                }
-                else
-                {
-                    requestDate = DateTime.MaxValue;
-                }
-            }
-
-
+            /*
             bool FilterFunction(NewsArticle article)
             {
                 if (!string.IsNullOrWhiteSpace(requestUrl) && !article.URL.Contains(requestUrl))
@@ -103,13 +81,9 @@ namespace DatabaseService
 
                 return true;
             }
-
+            */
             var response = new ListResponse();
-            response.Result = 
-                Database
-                .GetFilteredList(FilterFunction)
-                .OrderByDescending(a => a.Date)
-                .ToArray();
+            response.Result = Database.GetFilteredList(request).ToArray();
             return response;
         }
 
