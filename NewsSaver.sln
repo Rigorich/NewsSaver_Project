@@ -16,6 +16,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestClient", "TestClient\Te
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NewsManagerService", "NewsManagerService\NewsManagerService.csproj", "{D1A7828F-91BD-4F3C-B293-F63186B6F38E}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ClientApplication", "..\ClientApplication\ClientApplication.csproj", "{D22E4C0E-BADF-4639-94A1-EECC36B85081}"
+	ProjectSection(ProjectDependencies) = postProject
+		{33F4E986-EC81-4A3E-925C-6A04A28C1A8F} = {33F4E986-EC81-4A3E-925C-6A04A28C1A8F}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -42,6 +47,10 @@ Global
 		{D1A7828F-91BD-4F3C-B293-F63186B6F38E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D1A7828F-91BD-4F3C-B293-F63186B6F38E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D1A7828F-91BD-4F3C-B293-F63186B6F38E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D22E4C0E-BADF-4639-94A1-EECC36B85081}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D22E4C0E-BADF-4639-94A1-EECC36B85081}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D22E4C0E-BADF-4639-94A1-EECC36B85081}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D22E4C0E-BADF-4639-94A1-EECC36B85081}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
