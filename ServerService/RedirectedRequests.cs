@@ -20,10 +20,6 @@ namespace ServerService
     public class ListRequest : DatabaseService.ListRequest { }
     public class ListResponse : DatabaseService.ListResponse { }
 
-    [Route("/article")]
-    public class ArticleRequest : DatabaseService.ArticleRequest { }
-    public class ArticleResponse : DatabaseService.ArticleResponse { }
-
     #endregion
 
     public partial class NewsService : Service
@@ -40,9 +36,6 @@ namespace ServerService
 
         [AddHeader(ContentType = MimeTypes.Json)]
         public object Get(ListRequest request) => database.Get(request);
-
-        [AddHeader(ContentType = MimeTypes.Json)]
-        public object Get(ArticleRequest request) => database.Get(request);
 
         #endregion
     }

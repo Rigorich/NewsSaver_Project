@@ -35,6 +35,9 @@ namespace ClientApplication
             this.ComboBoxCount = new System.Windows.Forms.ComboBox();
             this.ButtonDownloadList = new System.Windows.Forms.Button();
             this.DataGridViewNews = new System.Windows.Forms.DataGridView();
+            this.ColumnDate = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.ColumnName = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.ColumnUrl = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.TimerLoadSites = new System.Windows.Forms.Timer(this.components);
             this.LabelConnection = new System.Windows.Forms.Label();
             this.LabelConnectionState = new System.Windows.Forms.Label();
@@ -56,9 +59,6 @@ namespace ClientApplication
             this.LabelOldNews = new System.Windows.Forms.Label();
             this.LabelCount = new System.Windows.Forms.Label();
             this.LabelCurrentPage = new System.Windows.Forms.Label();
-            this.ColumnDate = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.ColumnName = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.ColumnUrl = new System.Windows.Forms.DataGridViewTextBoxColumn();
             ((System.ComponentModel.ISupportInitialize)(this.DataGridViewNews)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.NumericUpDownSave)).BeginInit();
             this.SuspendLayout();
@@ -125,6 +125,36 @@ namespace ClientApplication
             this.DataGridViewNews.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
             this.DataGridViewNews.Size = new System.Drawing.Size(641, 531);
             this.DataGridViewNews.TabIndex = 4;
+            this.DataGridViewNews.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.DataGridViewNews_MouseDoubleClick);
+            // 
+            // ColumnDate
+            // 
+            this.ColumnDate.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
+            this.ColumnDate.FillWeight = 150F;
+            this.ColumnDate.HeaderText = "Дата публикации";
+            this.ColumnDate.MinimumWidth = 6;
+            this.ColumnDate.Name = "ColumnDate";
+            this.ColumnDate.ReadOnly = true;
+            this.ColumnDate.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+            this.ColumnDate.Width = 160;
+            // 
+            // ColumnName
+            // 
+            this.ColumnName.FillWeight = 300F;
+            this.ColumnName.HeaderText = "Название статьи";
+            this.ColumnName.MinimumWidth = 6;
+            this.ColumnName.Name = "ColumnName";
+            this.ColumnName.ReadOnly = true;
+            this.ColumnName.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
+            // 
+            // ColumnUrl
+            // 
+            this.ColumnUrl.FillWeight = 150F;
+            this.ColumnUrl.HeaderText = "Ссылка";
+            this.ColumnUrl.MinimumWidth = 6;
+            this.ColumnUrl.Name = "ColumnUrl";
+            this.ColumnUrl.ReadOnly = true;
+            this.ColumnUrl.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
             // 
             // TimerLoadSites
             // 
@@ -260,7 +290,6 @@ namespace ClientApplication
             // TextBoxKeywords
             // 
             this.TextBoxKeywords.Anchor = System.Windows.Forms.AnchorStyles.Right;
-            this.TextBoxKeywords.Enabled = false;
             this.TextBoxKeywords.Location = new System.Drawing.Point(693, 318);
             this.TextBoxKeywords.Name = "TextBoxKeywords";
             this.TextBoxKeywords.PlaceholderText = "Поиск по ключевым словам";
@@ -270,7 +299,6 @@ namespace ClientApplication
             // TextBoxEntities
             // 
             this.TextBoxEntities.Anchor = System.Windows.Forms.AnchorStyles.Right;
-            this.TextBoxEntities.Enabled = false;
             this.TextBoxEntities.Location = new System.Drawing.Point(693, 351);
             this.TextBoxEntities.Name = "TextBoxEntities";
             this.TextBoxEntities.PlaceholderText = "Поиск по сущностям";
@@ -356,35 +384,6 @@ namespace ClientApplication
             this.LabelCurrentPage.TabIndex = 23;
             this.LabelCurrentPage.Text = "Текущая\r\nстраница";
             this.LabelCurrentPage.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
-            // ColumnDate
-            // 
-            this.ColumnDate.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.None;
-            this.ColumnDate.FillWeight = 150F;
-            this.ColumnDate.HeaderText = "Дата публикации";
-            this.ColumnDate.MinimumWidth = 6;
-            this.ColumnDate.Name = "ColumnDate";
-            this.ColumnDate.ReadOnly = true;
-            this.ColumnDate.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
-            this.ColumnDate.Width = 160;
-            // 
-            // ColumnName
-            // 
-            this.ColumnName.FillWeight = 300F;
-            this.ColumnName.HeaderText = "Название статьи";
-            this.ColumnName.MinimumWidth = 6;
-            this.ColumnName.Name = "ColumnName";
-            this.ColumnName.ReadOnly = true;
-            this.ColumnName.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
-            // 
-            // ColumnUrl
-            // 
-            this.ColumnUrl.FillWeight = 150F;
-            this.ColumnUrl.HeaderText = "Ссылка";
-            this.ColumnUrl.MinimumWidth = 6;
-            this.ColumnUrl.Name = "ColumnUrl";
-            this.ColumnUrl.ReadOnly = true;
-            this.ColumnUrl.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
             // 
             // MainForm
             // 

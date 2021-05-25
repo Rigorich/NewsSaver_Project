@@ -19,4 +19,11 @@ namespace ServerService
         public bool[] ResultIsSaved { get; set; }
     }
 
+    [Route("/article")]
+    public class ArticlePasswordedRequest : IReturn<ArticlePasswordedResponse>
+    {
+        public string Url { get; set; }
+        public string Password { get; set; }
+    }
+    public class ArticlePasswordedResponse : DatabaseService.ArticleResponse { }
 }

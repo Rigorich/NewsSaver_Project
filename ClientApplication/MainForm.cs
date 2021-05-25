@@ -16,20 +16,29 @@ namespace ClientApplication
     public partial class MainForm : Form
     {
         JsonServiceClient server = new JsonServiceClient("http://localhost:5000");
+        public string Password = null;
 
         public MainForm()
         {
             InitializeComponent();
+        }
 
-            //DataGridViewNews.DataSource = new NewsArticle("url", "html", "name", "text", DateTime.Now);
-            string[][] rows = new string[][] {
-                new string[] {DateTime.Now.ToString("g"), "Тестовая статья", "http://test.by/" },
-                new string[] {DateTime.UnixEpoch.ToString("g"), "UNIX запустило время!", "http://unix.com/" },
-                new string[] {DateTime.MinValue.ToString("g"), "Учёные изобрели машину времени", "https://time.net" }
-            };
-            foreach (var row in rows)
+        private List<Label> WaitLabels = new List<Label>();
+
+        private void TimerLoadSitesDots_Tick(object sender, EventArgs e)
+        {
+            foreach (Label label in WaitLabels)
             {
-                DataGridViewNews.Rows.Add(row);
+                string text = label.Text;
+                if (text.EndsWith("..."))
+                {
+                    label.Text = text.Substring(0, text.Length - 3);
+                }
+                else
+                {
+                    label.Text += ".";
+                }
+                label.Refresh();
             }
         }
 
@@ -49,18 +58,13 @@ namespace ClientApplication
             LabelConnectionState.Refresh();
             WaitLabels.Add(LabelConnectionState);
             ComboBoxSites.Items.Clear();
+            string[] sites;
             try
             {
                 var request = new AvailableSitesRequest();
                 var response = await server.GetAsync(request);
                 var result = response.Result;
-
-                ComboBoxSites.Items.Add(Localization.NoSite);
-                ComboBoxSites.Items.AddRange(result);
-                ComboBoxSites.SelectedIndex = 0;
-                WaitLabels.Remove(LabelConnectionState);
-                LabelConnectionState.Text = Localization.Okay;
-                LabelConnectionState.Refresh();
+                sites = result;
             }
             catch (Exception ex) when (
                 ex is HttpError
@@ -68,27 +72,16 @@ namespace ClientApplication
                 || ex is System.Net.WebException)
             {
                 LostConnection();
-                //MessageBox.Show(he.Message, "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
             }
+            ComboBoxSites.Items.Add(Localization.NoSite);
+            ComboBoxSites.Items.AddRange(sites);
+            ComboBoxSites.SelectedIndex = 0;
+            WaitLabels.Remove(LabelConnectionState);
+            LabelConnectionState.Text = Localization.Okay;
+            LabelConnectionState.Refresh();
         }
 
-        private List<Label> WaitLabels = new List<Label>();
-        private void TimerLoadSitesDots_Tick(object sender, EventArgs e)
-        {
-            foreach (Label label in WaitLabels)
-            {
-                string text = label.Text;
-                if (text.EndsWith("..."))
-                {
-                    label.Text = text.Substring(0, text.Length - 3);
-                }
-                else
-                {
-                    label.Text += ".";
-                }
-                label.Refresh();
-            }
-        }
 
         void AddToDataGridView(IEnumerable<NewsArticle> news)
         {
@@ -106,18 +99,30 @@ namespace ClientApplication
         private void RefreshNewsList()
         {
             if (LabelConnectionState.Text != Localization.Okay) return;
-            var request = new ListRequest()
-            {
-                Url = ComboBoxSites.Text != Localization.NoSite ? ComboBoxSites.Text : null,
-                LeftBoundDate = DateTimePickerLeft.Checked ? DateTimePickerLeft.Value : DateTime.MinValue,
-                RightBoundDate = DateTimePickerRight.Checked ? DateTimePickerRight.Value : DateTime.MaxValue,
-                Keywords = null,
-                Entitities = null,
+            if (LabelSaveState.Text.StartsWith(Localization.WaitText)) return;
 
-                OldestFirst = CheckBoxOldNews.Checked,
-                Count = int.Parse(ComboBoxCount.Text),
-                Skip = (int.Parse(TextBoxPage.Text) - 1) * int.Parse(ComboBoxCount.Text),
-            };
+            ListRequest request;
+            try
+            {
+                request = new ListRequest()
+                {
+                    Url = ComboBoxSites.Text != Localization.NoSite ? ComboBoxSites.Text : null,
+                    LeftBoundDate = DateTimePickerLeft.Checked ? DateTimePickerLeft.Value.Date : DateTime.UnixEpoch.AddYears(-1),
+                    RightBoundDate = DateTimePickerRight.Checked ? DateTimePickerRight.Value.Date.AddDays(1).AddSeconds(-1) : DateTime.MaxValue,
+                    Keywords = TextBoxKeywords.Text.Split(",;. |".ToCharArray()),
+                    Entitities = TextBoxEntities.Text.Split(",;. |".ToCharArray()),
+
+                    OldestFirst = CheckBoxOldNews.Checked,
+                    Count = int.Parse(ComboBoxCount.Text),
+                    Skip = (int.Parse(TextBoxPage.Text) - 1) * int.Parse(ComboBoxCount.Text),
+                };
+            }
+            catch (FormatException)
+            {
+                MessageBox.Show("Неверное число", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
             NewsArticle[] result;
             try
             {
@@ -129,8 +134,10 @@ namespace ClientApplication
                 || ex is WebServiceException
                 || ex is System.Net.WebException)
             {
+                LostConnection();
                 return;
             }
+
             DataGridViewNews.Rows.Clear();
             AddToDataGridView(result);
         }
@@ -174,7 +181,6 @@ namespace ClientApplication
                 WaitLabels.Remove(LabelSaveState);
                 LabelSaveState.Text = Localization.Error;
                 LabelSaveState.Refresh();
-                //MessageBox.Show(he.Message, "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
             NewsArticle[] news = response.ResultNews;
@@ -222,6 +228,52 @@ namespace ClientApplication
         private void CheckBoxOldNews_CheckedChanged(object sender, EventArgs e)
         {
             RefreshNewsList();
+        }
+
+        private void DataGridViewNews_MouseDoubleClick(object sender, MouseEventArgs e)
+        {
+            if (DataGridViewNews.SelectedRows.Count == 1)
+            {
+                if (Password.IsNullOrEmpty())
+                {
+                    using (var form = new PasswordForm(this))
+                    {
+                        form.ShowDialog();
+                    }
+                }
+                if (!Password.IsNullOrEmpty())
+                {
+                    int index = DataGridViewNews.SelectedRows[0].Index;
+                    string url = DataGridViewNews.Rows[index].Cells[2].Value as string;
+                    ArticlePasswordedRequest request = new ArticlePasswordedRequest() { Url = url, Password = Password };
+
+                    ArticlePasswordedResponse response;
+                    try
+                    {
+                        response = server.Get(request);
+                    }
+                    catch (WebServiceException ex) when (ex.StatusCode == 403)
+                    {
+                        Password = null;
+                        MessageBox.Show("Неверный пароль", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        return;
+                    }
+                    catch (Exception ex) when (
+                        ex is HttpError
+                        || ex is WebServiceException
+                        || ex is System.Net.WebException)
+                    {
+                        LostConnection();
+                        return;
+                    }
+
+                    NewsArticle article = response.Result;
+                    using (var form = new ArticleForm(article))
+                    {
+                        form.ShowDialog();
+                    }
+                }
+            }
         }
     }
 }
