@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ApplicationIcon>Pahonya.ico</ApplicationIcon>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ServerService\ServerService.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="BaseClasses">
+      <HintPath>..\BaseClasses\bin\Debug\netcoreapp3.1\BaseClasses.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+</Project>

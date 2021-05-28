@@ -157,7 +157,7 @@ namespace TestClient
                 Console.WriteLine("GET ARTICLE");
                 Console.WriteLine("Enter url:");
                 string url = Console.ReadLine();
-                NewsArticle article = server.Get(new ArticleRequest() { Url = url }).Result;
+                NewsArticle article = server.Get(new ArticlePasswordedRequest() { Url = url, Password = "Belarus" }).Result;
                 if (article is null)
                 {
                     Console.WriteLine("There is no such article");

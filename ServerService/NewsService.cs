@@ -2,6 +2,10 @@ using BaseClasses;
 using DatabaseService;
 using ManagerService;
 using ServiceStack;
+using System;
+using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace ServerService
 {
@@ -80,6 +84,28 @@ namespace ServerService
             response.ResultNews = news;
             response.ResultIsSaved = saved;
             return response;
+        }
+
+        [AddHeader(ContentType = MimeTypes.Json)]
+        public object Get(ArticlePasswordedRequest request)
+        {
+            string[] Passwords = new string[] {
+                "1834e58a07a1bd761ded407b46f4d330",
+                "6542f875eaa09a5c550e5f3986400ad9",
+                "d3a7614779546ac33f7afb2f5e4872aa"
+            };
+            MD5 md5 = MD5.Create();
+            string hash = md5.ComputeHash(Encoding.UTF8.GetBytes(request.Password)).ToHex(false);
+            if (Passwords.Contains(hash))
+            {
+                var response = new ArticlePasswordedResponse();
+                response.Result = database.Get(new ArticleRequest() { Url = request.Url }).Result;
+                return response;
+            }
+            else
+            {
+                return HttpError.Forbidden("Wrong password");
+            }
         }
     }
 }
