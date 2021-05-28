@@ -111,21 +111,22 @@ namespace TestClient
                 Console.WriteLine("GET FILTER LIST");
                 string url;
                 DateTime? ldate, rdate;
-                string[] keywords, entities;
+                string keywords;
+                string[] entities;
                 Console.WriteLine("Enter left bound date:"); ldate = Console.ReadLine().ToDateTime();
                 Console.WriteLine("Enter right bound date:"); rdate = Console.ReadLine().ToDateTime();
                 Console.WriteLine("Enter url:"); url = Console.ReadLine();
 
                 static string[] ParseLine(string s)
                 {
-                    return s.Split(",").Select(w => w.ToLowerInvariant().Trim()).Where(w => !w.IsNullOrEmpty()).ToArray();
+                    return s.Split(",").Select(w => w.Trim()).Where(w => !w.IsNullOrEmpty()).ToArray();
                 }
-                Console.WriteLine("Enter keywords separated by comma:"); keywords = ParseLine(Console.ReadLine());
+                Console.WriteLine("Enter keywords query:"); keywords = Console.ReadLine();
                 Console.WriteLine("Enter entities separated by comma:"); entities = ParseLine(Console.ReadLine());
 
                 Console.WriteLine($"URL = {url}");
                 Console.WriteLine($"Dates = {ldate} - {rdate}");
-                Console.WriteLine($"Keywords = {keywords.Join(", ")}");
+                Console.WriteLine($"Keywords = {keywords}");
                 Console.WriteLine($"Entities = {entities.Join(", ")}");
 
                 Console.WriteLine("OK? (Press Enter)");
