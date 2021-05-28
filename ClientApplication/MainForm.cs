@@ -109,8 +109,8 @@ namespace ClientApplication
                     Url = ComboBoxSites.Text != Localization.NoSite ? ComboBoxSites.Text : null,
                     LeftBoundDate = DateTimePickerLeft.Checked ? DateTimePickerLeft.Value.Date : DateTime.UnixEpoch.AddYears(-1),
                     RightBoundDate = DateTimePickerRight.Checked ? DateTimePickerRight.Value.Date.AddDays(1).AddSeconds(-1) : DateTime.MaxValue,
-                    Keywords = TextBoxKeywords.Text.Split(",;. |".ToCharArray()),
-                    Entitities = TextBoxEntities.Text.Split(",;. |".ToCharArray()),
+                    Keywords = TextBoxKeywords.Text,
+                    Entitities = TextBoxEntities.Text.Split("+").Select(w => w.Trim()).Where(w => !w.IsNullOrEmpty()).ToArray(),
 
                     OldestFirst = CheckBoxOldNews.Checked,
                     Count = int.Parse(ComboBoxCount.Text),

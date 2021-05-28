@@ -301,7 +301,7 @@ namespace ClientApplication
             this.TextBoxEntities.Anchor = System.Windows.Forms.AnchorStyles.Right;
             this.TextBoxEntities.Location = new System.Drawing.Point(693, 351);
             this.TextBoxEntities.Name = "TextBoxEntities";
-            this.TextBoxEntities.PlaceholderText = "Поиск по сущностям";
+            this.TextBoxEntities.PlaceholderText = "Поиск по сущностям (ввод через +)";
             this.TextBoxEntities.Size = new System.Drawing.Size(266, 27);
             this.TextBoxEntities.TabIndex = 16;
             // 
